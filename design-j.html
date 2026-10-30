@@ -1,0 +1,2169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Signal Agent — map the noise, name the signal</title>
+<meta name="description" content="Signal Agent reads every Pons launch on Robinhood Chain. Most launches are noise; it finds the signal.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://signalaiagent.com/">
+<meta property="og:title" content="Signal Agent">
+<meta property="og:description" content="Most launches are noise. Signal Agent finds the signal.">
+<meta property="og:image" content="https://signalaiagent.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@signalagentai">
+<meta name="twitter:creator" content="@signalagentai">
+<meta name="twitter:image" content="https://signalaiagent.com/og.png">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ===== Signal Agent: most launches are noise, it finds the signal. Swiss-minimal, one cold accent, calm motion. ===== */
+:root{
+  --bg:#F5F3EC;--panel:#EEEBE2;--raise:#FCFBF7;--line:rgba(22,21,20,.1);--line2:rgba(22,21,20,.2);
+  --text:#161514;--dim:#5E5A53;--faint:#9A958B;--sig:#161514;--sig-d:rgba(22,21,20,.05);--int:#B5432E;
+  --ink:#161514;--paper:#F5F3EC;
+  --sans:"Inter Tight",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;--serif:var(--sans);
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+/* inverted sections: black ground, broken-white ink */
+.inv{--bg:#161514;--panel:#1C1B19;--raise:#22201E;--line:rgba(245,243,236,.1);--line2:rgba(245,243,236,.18);--text:#F5F3EC;--dim:#A39E94;--faint:#6B675F;--sig:#F5F3EC;--sig-d:rgba(245,243,236,.06);background:var(--bg);color:var(--text)}
+*{box-sizing:border-box}
+html{background:var(--bg);color-scheme:light;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::selection{background:var(--ink);color:var(--paper)}
+input,textarea{caret-color:var(--sig)}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:1.5px solid var(--sig);outline-offset:3px;border-radius:4px}
+[hidden]{display:none!important}
+.wrap{max-width:1200px;margin:0 auto;padding:0 32px}
+.kick{display:flex;align-items:center;gap:10px;margin:0 0 28px;font:400 12px var(--mono);letter-spacing:.06em;color:var(--dim)}
+.kick i{width:6px;height:6px;border-radius:50%;background:var(--sig);animation:rx 2.4s ease-in-out infinite}
+@keyframes rx{50%{opacity:.25}}
+.kick.plain{margin-bottom:18px;text-transform:uppercase;letter-spacing:.14em;font-size:11px;color:var(--faint)}
+h2{margin:0;font:400 clamp(30px,3.6vw,48px)/1.08 var(--sans);letter-spacing:-.04em}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;height:34px;padding:0 15px;border-radius:6px;border:1px solid var(--line2);background:transparent;color:var(--text);font:500 13px var(--sans);text-decoration:none;cursor:pointer;transition:background .25s,border-color .25s,color .25s}
+.btn.line:hover{border-color:var(--dim)}
+.btn.solid{background:var(--text);color:var(--bg);border-color:var(--text)}
+.btn.solid:hover{background:#2c2a27}
+.btn.solid[aria-disabled="true"]{background:transparent;color:var(--faint);border-color:var(--line2);cursor:default}
+.btn.lg{height:44px;padding:0 22px;font-size:14px}
+#holderBtn.on{border-color:var(--sig);color:var(--sig)}
+.ic{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:6px;border:1px solid var(--line2);background:transparent;color:var(--dim);cursor:pointer;text-decoration:none;font-size:20px;line-height:1}
+.ic:hover{color:var(--text)}
+
+/* nav */
+.nav{position:fixed;inset:0 0 auto;z-index:30;transition:background .4s,border-color .4s;border-bottom:1px solid transparent}
+body.scrolled .nav{background:rgba(245,243,236,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:var(--line)}
+.nav .wrap{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:64px}
+.brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font:600 18px var(--sans);letter-spacing:-.03em}
+.glyph{width:24px;height:auto;color:var(--text)}
+.brand span{font-weight:400}.brand span b{font-weight:600}
+.nav nav{display:flex;gap:30px}
+.nav nav a{text-decoration:none;font:400 13.5px var(--sans);color:var(--dim);transition:color .2s}
+.nav nav a:hover{color:var(--text)}
+.nav .r{display:flex;justify-content:flex-end;gap:8px}
+
+/* hero: words on paper, the field drawn straight onto the page */
+.hero{position:relative;min-height:100svh;display:flex;align-items:center;padding:120px 0 70px;overflow:hidden}
+#field{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 22%,rgba(245,243,236,.75) 46%,rgba(245,243,236,0) 72%),linear-gradient(0deg,var(--bg),rgba(245,243,236,0) 26%);pointer-events:none}
+.hgrid{position:relative;z-index:2;width:100%}
+.hl{max-width:600px}
+.hero h1{margin:0;font:400 clamp(44px,5.6vw,84px)/1 var(--sans);letter-spacing:-.055em;color:var(--faint)}
+.hero h1 span{color:var(--text)}
+.fieldcap{position:absolute;z-index:2;right:32px;bottom:28px;display:flex;gap:22px}
+.sc{font:400 11px var(--mono);letter-spacing:.08em;color:var(--faint)}
+.sc b{color:var(--text);font-weight:500}
+.sc.bl.hot{color:var(--text)}
+.kick i{background:var(--ink)}
+/* the tape: newest launches running by */
+.tape{background:#161514;color:#F5F3EC;overflow:hidden;border-top:1px solid #161514;white-space:nowrap}
+.tt{display:inline-flex;gap:48px;padding:13px 0;font:400 12.5px var(--mono);letter-spacing:.02em;animation:tape 60s linear infinite}
+.tt span{color:#8F8A81}.tt b{color:#F5F3EC;font-weight:500}.tt em{font-style:normal;color:#F5F3EC;border:1px solid rgba(245,243,236,.4);border-radius:3px;padding:1px 6px;margin-left:8px;font-size:10.5px;letter-spacing:.1em}
+.tt i{font-style:normal;color:#D9826E;margin-left:8px;font-size:10.5px;letter-spacing:.1em}
+.tape:hover .tt{animation-play-state:paused}
+@keyframes tape{to{transform:translateX(-50%)}}
+.convo{width:100%;max-width:560px;margin-top:48px}
+.thread{display:grid;gap:18px;max-height:44svh;overflow-y:auto;margin-bottom:18px;padding-right:6px;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+.thread:empty{display:none}
+.msg{display:grid;gap:10px;animation:up .5s var(--ease)}
+@keyframes up{from{opacity:0;transform:translateY(8px)}}
+.msg.u{justify-items:end}
+.msg.u .t{border:1px solid var(--line2);border-radius:10px;padding:9px 14px;max-width:85%;white-space:pre-wrap;word-break:break-word;color:var(--dim)}
+.msg.a{grid-template-columns:18px 1fr;column-gap:14px}
+.msg.a .av{width:18px;height:18px;margin-top:5px;color:var(--sig)}
+.msg.a .av svg{width:18px;height:auto}
+.msg.a .t{white-space:pre-wrap}
+.msg.a .acts{grid-column:2;display:flex;gap:8px;flex-wrap:wrap}
+.msg.a .acts .btn{height:30px;font-size:12.5px}
+.typing{display:inline-flex;gap:5px;padding-top:9px}.typing i{width:5px;height:5px;border-radius:50%;background:var(--sig);animation:rx 1s infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+.rep{grid-column:2;border:1px solid var(--line2);border-radius:10px;padding:14px 16px;display:grid;gap:10px;background:var(--raise)}
+.rep .hd{display:flex;align-items:center;gap:10px}
+.rep .hd img{width:30px;height:30px;border-radius:6px;object-fit:cover}
+.rep .hd b{font:600 14.5px var(--sans)}.rep .hd span{color:var(--faint);font:12px var(--mono)}
+.rep .rk{margin-left:auto;font:400 11.5px var(--mono);padding:3px 9px;border-radius:4px;border:1px solid currentColor}
+.rep .rk.low{color:var(--sig)}.rep .rk.medium{color:#D2B57A}.rep .rk.high{color:var(--int)}
+.rep ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.rep li{display:grid;grid-template-columns:8px 1fr;gap:10px;align-items:baseline;font-size:14px;color:var(--dim)}
+.rep li b{color:var(--text);font-weight:500}
+.rep li i{width:6px;height:6px;border-radius:50%;background:var(--faint)}
+.rep li.high i{background:var(--int)}.rep li.ok i{background:var(--sig)}
+.box{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line2);padding:6px 0 10px;transition:border-color .3s}
+.box:focus-within{border-color:var(--sig)}
+.box textarea{flex:1;border:0;outline:0;resize:none;background:transparent;color:var(--text);font:300 20px/1.45 var(--sans);letter-spacing:-.01em;max-height:160px;padding:4px 0}
+.box textarea::placeholder{color:var(--faint)}
+.send{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid var(--line2);background:transparent;color:var(--text);display:grid;place-items:center;cursor:pointer;transition:all .25s}
+.send:not(:disabled):hover{background:var(--text);color:var(--bg)}
+.send:disabled{opacity:.3;cursor:default}
+.send svg{width:16px;height:16px}
+.under{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:12.5px;color:var(--faint)}
+.asks{display:flex;gap:18px}
+.asks button{border:0;background:none;padding:0;color:var(--dim);font-size:12.5px;cursor:pointer;text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px}
+.asks button:hover{color:var(--text);text-decoration-color:var(--sig)}
+
+/* live band */
+section{position:relative}
+.band{padding:140px 0 0}
+.bh{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:40px}
+.tally{margin:0;font:400 13px var(--mono);color:var(--dim)}
+.tally b{color:var(--text);font-weight:500}.tally b.s{color:var(--sig)}.tally span{color:var(--faint);margin:0 4px}
+.rows{border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:150px 64px minmax(0,1fr) 220px 90px;align-items:center;gap:24px;width:100%;padding:16px 4px;border:0;border-bottom:1px solid var(--line);background:transparent;text-align:left;cursor:pointer;transition:background .3s}
+.row:hover{background:var(--raise)}
+.row .sym{font:500 15px var(--sans);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .age{font:12px var(--mono);color:var(--faint)}
+.row svg{width:100%;height:28px;display:block}
+.row svg path{fill:none;stroke-width:1.2;stroke:var(--faint)}
+.row.sig svg path{stroke:var(--sig);stroke-width:1.5}
+.row .why{font-size:13px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .st{justify-self:end;font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.row.sig .st{color:var(--sig)}.row.int .st{color:var(--int)}
+.row.sig .sym{color:var(--text)}.row:not(.sig) .sym{color:var(--dim)}
+.row.fresh{animation:fresh 1.6s var(--ease)}
+@keyframes fresh{from{background:var(--sig-d)}}
+.fine{margin:22px 0 0;font-size:13px;color:var(--faint);max-width:70ch}
+
+/* how */
+.how{padding:150px 0 0}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:48px;margin-top:64px}
+.steps svg{width:100%;height:40px;color:var(--sig);margin-bottom:26px}
+.steps b{display:block;font:500 15px var(--sans);letter-spacing:-.01em}
+.steps p{margin:8px 0 0;color:var(--dim);font-size:15px}
+
+/* tools */
+.tools{margin-top:150px;padding:130px 0 140px}
+.tgrid{display:grid;grid-template-columns:repeat(4,1fr);margin-top:56px;border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.tgrid a{display:grid;align-content:space-between;gap:40px;min-height:170px;padding:22px 22px 24px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-decoration:none;transition:background .3s}
+.tgrid a:hover{background:var(--panel)}
+.tgrid span{font:500 17px var(--sans);letter-spacing:-.02em}
+.tgrid small{font-size:13.5px;color:var(--dim);line-height:1.5}
+.tgrid a.free span::after{content:"Free";margin-left:10px;font:400 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--sig);vertical-align:2px}
+body:not(.holder) .tgrid a:not(.free):not(.ask) span::after{content:"Holders";margin-left:10px;font:400 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint);vertical-align:2px}
+
+/* token */
+.token{padding:140px 0 0}
+.tk{display:grid;grid-template-columns:1.1fr .9fr;gap:80px;align-items:end}
+.lead{margin:22px 0 0;color:var(--dim);font-size:17px;max-width:46ch}
+.cta{display:flex;gap:10px;margin-top:34px;flex-wrap:wrap}
+.facts{margin:0;border-top:1px solid var(--line)}
+.facts div{display:flex;justify-content:space-between;gap:20px;padding:16px 0;border-bottom:1px solid var(--line)}
+.facts dt{color:var(--faint);font-size:14px}.facts dd{margin:0;font-size:14px}
+.ca{border:0;background:none;padding:0;font:13px var(--mono);color:var(--text);cursor:pointer}
+.ca:hover{color:var(--sig)}
+
+footer{margin-top:160px}
+.fr{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;padding-top:28px;padding-bottom:28px;font-size:13.5px;color:var(--dim)}
+.fr .links{display:flex;gap:26px}.fr .links a{text-decoration:none}.fr .links a:hover{color:var(--text)}
+.fr.small{border-top:1px solid var(--line);font-size:12.5px;color:var(--faint)}
+
+/* tools drawer */
+.drawer{position:fixed;inset:0;z-index:50;background:rgba(12,11,10,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;justify-content:flex-end;animation:fd .3s ease}
+@keyframes fd{from{opacity:0}}
+.drawer>*{width:min(1240px,100%)}
+.dhead{position:absolute;right:0;top:0;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 18px 0 26px;background:#1C1B19;color:#F5F3EC;border-left:1px solid var(--line);border-bottom:1px solid var(--line);font-size:14px}
+.dhead b{font-weight:500}
+.dbody{margin-top:60px;height:calc(100svh - 60px);overflow-y:auto;background:#1C1B19;border-left:1px solid var(--line);padding:18px;animation:sl .5s var(--ease)}
+@keyframes sl{from{transform:translateX(30px);opacity:0}}
+.dbody .ws{--ws-r:10px;box-shadow:none}
+body.drawer-open{overflow:hidden}
+.ws .tool{position:relative}
+.ws .lock{position:absolute;inset:0;z-index:5;display:grid;place-items:start center;padding:110px 30px 30px;text-align:center;background:rgba(22,21,20,.86);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.ws .lock div{display:grid;gap:12px;justify-items:center;max-width:380px}
+.ws .lock svg{width:26px;height:26px;color:#F5F3EC}
+.ws .lock b{font:400 22px var(--sans);letter-spacing:-.03em;color:#F5F3EC}
+.ws .lock p{margin:0;color:#A39E94;font-size:14.5px}
+.ws .lock .btn{height:38px;padding:0 20px;border-radius:6px;background:#F5F3EC;color:#161514;border:1px solid #F5F3EC;font:500 14px var(--sans)}
+body.holder .ws .lock{display:none}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:70;background:rgba(12,11,10,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:grid;place-items:center;padding:20px}
+.sheet{position:relative;width:min(440px,100%);background:var(--raise);border:1px solid var(--line2);border-radius:12px;padding:32px;display:grid;gap:14px}
+.sheet h3{margin:0;font:400 26px var(--sans);letter-spacing:-.03em}
+.sheet p{margin:0;color:var(--dim)}
+.sheet .x{position:absolute;right:16px;top:12px;border:0;background:transparent;font-size:24px;color:var(--faint);cursor:pointer}
+.merr{color:var(--int)!important;font-size:14px}.merr:empty{display:none}
+#mOwner summary{cursor:pointer;color:var(--faint);font-size:13px}
+#ownerForm{display:flex;gap:8px;margin-top:10px}
+#ownerForm input{flex:1;min-width:0;height:36px;border-radius:6px;border:1px solid var(--line2);background:var(--raise);color:var(--text);padding:0 12px;font:14px var(--sans)}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(16px);transition:opacity 1.1s var(--ease),transform 1.1s var(--ease)}
+.rv.in{opacity:1;transform:none}
+
+@media (max-width:1000px){
+  .wrap{padding:0 20px}
+  .nav nav{display:none}.nav .wrap{grid-template-columns:1fr auto}#holderBtn{display:none}
+  .hero{padding-top:96px;min-height:0}
+  .hero{align-items:flex-end;padding-top:96px;min-height:92svh}
+  .hero::after{background:linear-gradient(0deg,var(--bg) 42%,rgba(245,243,236,.6) 70%,rgba(245,243,236,.15))}
+  .fieldcap{display:none}
+  .box textarea{font-size:17px}
+  .kick .bk{display:none}
+  .row{grid-template-columns:minmax(0,1fr) 56px auto;gap:12px}
+  .row .why,.row .age{display:none}
+  .steps{grid-template-columns:1fr;gap:40px}
+  .tgrid{grid-template-columns:1fr 1fr}.tgrid a{min-height:150px}
+  .tk{grid-template-columns:1fr;gap:50px}
+  .band,.how,.token{padding-top:110px}.tools{margin-top:110px;padding:100px 0}
+}
+@media (max-width:520px){.tgrid{grid-template-columns:1fr}.tgrid a{min-height:0;gap:14px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}.rv{opacity:1;transform:none}}
+.tgrid a.ask{background:var(--sig-d)}.tgrid a.ask span{color:var(--sig)}
+
+/* nav over the black tools section */
+body.scrolled .nav{box-shadow:0 1px 0 var(--line)}
+
+/* ===== Atlas: the map of Pons. Every launch is a star; only the ones that shine get a name. ===== */
+html{scroll-behavior:auto}
+#atlas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;touch-action:pan-y}
+#labels{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.lb{position:absolute;left:0;top:0;transform:translate(10px,-50%);font:500 11.5px var(--mono);letter-spacing:.04em;white-space:nowrap;color:var(--text);will-change:transform,opacity}
+.lb.sig{font:600 13px var(--sans);letter-spacing:-.01em}
+.lb.sig::before{content:"";position:absolute;left:-14px;top:50%;width:10px;height:1px;background:currentColor}
+.lb.no{color:var(--dim)}
+.lb.hot{font-size:19px;padding:4px 10px;margin-left:6px;border:1px solid var(--text);border-radius:4px;background:var(--raise)}
+.lb.hot::after{content:attr(data-why);display:block;font:400 11px var(--mono);letter-spacing:.02em;color:var(--dim);margin-top:2px}
+main,footer{position:relative;z-index:1}
+/* hero: the globe sits far right, the conversation on the left */
+.hero{background:transparent}
+.hero::after{display:none}
+.veil{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,var(--bg) 18%,rgba(245,243,236,.7) 38%,rgba(245,243,236,0) 58%),linear-gradient(0deg,var(--bg),rgba(245,243,236,0) 22%)}
+.dive{position:absolute;inset:0;z-index:2;display:grid;place-content:center;text-align:center;pointer-events:none;opacity:0}
+.dive p{margin:0;font:400 clamp(34px,4.6vw,68px)/1.05 var(--sans);letter-spacing:-.05em}
+.dive p span{color:var(--faint)}
+.fieldcap{z-index:3}
+/* solid sections slide over the map; how and token let it show */
+.band{background:var(--bg);padding-bottom:140px}
+.tape{position:relative}
+/* how: pinned, three steps, the globe does the explaining */
+.how{padding:0;height:100svh;min-height:640px}
+.hw{height:100%;display:flex;align-items:center}
+.hp{max-width:500px;padding:34px 36px;border-radius:18px;background:rgba(245,243,236,.8);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line)}
+.hp h2 span,.token h2 span{color:var(--faint)}
+.hsteps{display:grid;gap:6px;margin-top:34px}
+.hs{padding:16px 18px;border-radius:10px;border:1px solid transparent;opacity:.35;transition:all .6s var(--ease)}
+.hs b{display:block;font:500 17px var(--sans);letter-spacing:-.02em}.hs span{font-size:14.5px;color:var(--dim)}
+.hs .n{display:block;font:400 11px var(--mono);letter-spacing:.14em;margin-bottom:4px;color:var(--faint)}
+.hs.on{opacity:1;border-color:var(--line2);background:var(--raise)}
+.meter{height:2px;background:var(--line);margin-top:22px}.meter i{display:block;height:100%;background:var(--text);transform-origin:left;transform:scaleX(0)}
+.tools{margin-top:0}
+/* token: the page ends on the map it began with */
+.token{padding:0;min-height:100svh;display:flex;align-items:center}
+.tk2{width:100%}
+.tc{max-width:520px;padding:40px 0}
+.tc .facts{margin-top:44px}
+footer{margin-top:0;background:var(--bg)}
+/* word masks: room on every side so tight tracking never clips a glyph; colour follows the line, not the mask */
+.sp{display:inline-block;overflow:hidden;vertical-align:top;padding:0 .08em .1em;margin:0 -.08em}.sp>span{display:inline-block}
+.hero h1 .sp,.hero h1 .sp>span,.hp h2 .sp,.hp h2 .sp>span,.token h2 .sp,.token h2 .sp>span{color:inherit}
+@media (max-width:1000px){
+  .veil{background:linear-gradient(0deg,var(--bg) 40%,rgba(245,243,236,.55) 68%,rgba(245,243,236,0))}
+  .hw{align-items:flex-end;padding-bottom:70px}.hp{padding:24px 22px}.hsteps{margin-top:20px}.hs{padding:12px 14px}
+  .tc{background:rgba(245,243,236,.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:28px 22px;border-radius:16px;margin-top:40svh}
+  .token{align-items:flex-end;padding-bottom:40px}
+  .lb.no{display:none}
+}
+
+/* ===== workspace window: the same tools in every design, always a dark instrument ===== */
+.ws{--bg:#161514;--text:#F5F3EC;--mid:#aaa59c;--dim:#7a766f;--line:rgba(245,243,236,.09);--line2:rgba(245,243,236,.16);--panel:rgba(28,27,25,.9);
+  --acc:#F5F3EC;--acc2:rgba(245,243,236,.22);--acc3:rgba(245,243,236,.05);--high:#ff5a5f;--watch:#e8c35a;--ok:#4ade80;
+  color:var(--text);background:#161514;border:1px solid rgba(245,243,236,.1);border-radius:var(--ws-r,18px);overflow:hidden;box-shadow:0 60px 140px -50px rgba(0,0,0,.6);font:14.5px/1.55 var(--sans)}
+.ws a{color:inherit}
+.ws-bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:14px 20px;border-bottom:1px solid var(--line);font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.ws-bar b{color:var(--text);font-weight:500}
+.ws-bar .t{font:500 15px var(--sans);letter-spacing:0;text-transform:none;color:var(--text)}
+.ws-bar .r{text-align:right}
+.ws-bar .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ok);margin-right:8px;box-shadow:0 0 8px var(--ok)}
+.ws-body{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:640px}
+.ws .tabs{display:flex;flex-direction:column;gap:2px;padding:12px;border-right:1px solid var(--line);margin:0;flex-wrap:nowrap}
+.ws .tabs button{display:grid;grid-template-columns:26px 1fr;column-gap:8px;text-align:left;background:transparent;border:1px solid transparent;border-radius:10px;padding:10px 12px;color:var(--mid);cursor:pointer;transition:background .2s,color .2s;font:inherit}
+.ws .tabs button .ti{grid-row:span 2;font:500 11px var(--mono);color:var(--dim);padding-top:3px}
+.ws .tabs button .tn{font:500 14px var(--sans);color:inherit}
+.ws .tabs button .td{font-size:12px;color:var(--dim)}
+.ws .tabs button:hover{background:rgba(245,243,236,.04);color:var(--text);border-color:transparent}
+.ws .tabs button.on{background:#F5F3EC;color:#161514;border-color:#F5F3EC}.ws .tabs button.on .ti,.ws .tabs button.on .td{color:#6a665f}
+.ws .tabs .sep{height:1px;background:var(--line);margin:8px 4px}
+.ws .tabs .tside{margin-top:auto;padding:12px;font:500 10.5px var(--mono);letter-spacing:.08em;color:var(--dim);line-height:1.9}
+.ws .panes{min-width:0}
+.ws .tool{display:none;padding:26px;min-height:640px}.ws .tool.on{display:block;animation:wsfade .4s ease}
+@keyframes wsfade{from{opacity:0;transform:translateY(6px)}}
+.ws .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.ws .tool.panel{background:transparent;border:0;border-radius:0}
+.ws .hud:before,.ws .hud:after{display:none!important}
+.ws .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:500 13.5px var(--sans);padding:11px 18px;border-radius:999px;border:1px solid #F5F3EC;background:#F5F3EC;color:#161514;cursor:pointer;white-space:nowrap;text-decoration:none}
+.ws .btn.ghost{background:transparent;color:var(--text);border-color:var(--line2)}
+.ws .btn.sm{padding:8px 14px;font-size:12.5px}
+.ws .btn.danger{background:transparent;color:#ff8a8d;border-color:rgba(255,90,95,.45)}
+.ws .btn:disabled{opacity:.45;cursor:wait}
+.ws .lbl{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.ws .lbl b{color:var(--text);font-weight:500}
+.ws .mono{font-family:var(--mono)}
+.ws input,.ws textarea,.ws select{border-radius:10px!important}
+.ws input:focus,.ws textarea:focus,.ws select:focus{outline:none;border-color:#F5F3EC!important;box-shadow:0 0 0 3px rgba(245,243,236,.08)}
+.ws .snsec h4{font:600 16px var(--sans)!important;text-transform:none!important;letter-spacing:-.01em!important}
+@keyframes beat{50%{opacity:.25}}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (max-width:1000px){
+  .ws-body{grid-template-columns:1fr}.ws-bar{grid-template-columns:1fr auto}.ws-bar .r{display:none}
+  .ws .tabs{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);align-items:center;scrollbar-width:none}.ws .tabs::-webkit-scrollbar{display:none}
+  .ws .tabs button{display:block;flex:none;white-space:nowrap;border-radius:999px;padding:8px 14px}.ws .tabs button .ti,.ws .tabs button .td,.ws .tabs .sep,.ws .tabs .tside{display:none}
+  .ws .tool{padding:18px;min-height:420px}.ws-body{min-height:0}
+}
+
+/* caret follows the ground: light caret inside the dark tools window */
+.ws input,.ws textarea{caret-color:#F5F3EC}
+.ws ::selection{background:#F5F3EC;color:#161514}
+/* radar rows: the checks column gets the room, long checks wrap instead of running under the verdict */
+.ws .tool .rrow{grid-template-columns:44px minmax(0,1fr) 64px minmax(0,1.5fr) 76px max-content;gap:16px}
+.ws .tool .rrow .checks{min-width:0}
+.ws .tool .rrow .ck{white-space:normal;max-width:100%;line-height:1.35}
+@media (max-width:1000px){
+  .ws .tool .rrow{grid-template-columns:40px minmax(0,1fr) 76px;row-gap:10px}
+  .ws .tool .rrow .age,.ws .tool .rrow .pg{display:none}
+  .ws .tool .rrow .checks,.ws .tool .rrow .ract{grid-column:1/-1}
+  .ws .tool .rrow .ract{justify-content:flex-start;grid-row:3}
+  .ws .tool .rrow .verdict{grid-column:3;grid-row:1;align-self:center}
+  .ws .tool .rrow .checks{grid-row:2}
+}
+
+/* scanner: rug risk, bundles, X */
+.ws .risk{display:grid;grid-template-columns:150px 1fr;gap:22px;align-items:center;padding:18px;border:1px solid var(--line);border-radius:14px;margin:4px 0 18px;background:rgba(245,243,236,.02)}
+.ws .risk .rg{position:relative;width:140px;height:140px}
+.ws .risk .rg svg{width:100%;height:100%}
+.ws .risk .rg .t{fill:none;stroke:rgba(245,243,236,.08);stroke-width:10}
+.ws .risk .rg .v{fill:none;stroke-width:10;stroke-linecap:round}
+.ws .risk.low .v{stroke:#4ade80}.ws .risk.medium .v{stroke:#e8c35a}.ws .risk.high .v{stroke:#ff5a5f}
+.ws .risk .rg>div{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.ws .risk .rg b{font:600 30px var(--sans);letter-spacing:-.02em}.ws .risk .rg span{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em}
+.ws .risk.low .lbl b{color:#4ade80}.ws .risk.medium .lbl b{color:#e8c35a}.ws .risk.high .lbl b{color:#ff5a5f}
+.ws .risk ul{margin:10px 0 6px;padding-left:18px;display:grid;gap:4px;font-size:14px}
+.ws .rnote{margin:8px 0 0;font-size:13px;color:var(--dim)}.ws .rnote.bad{color:#ff8a8d}.ws .rnote.good{color:#4ade80}
+.ws .why{font-size:11.5px;color:var(--dim);margin-top:2px}
+.ws .xrow{display:flex;align-items:center;gap:8px;margin-top:10px;font-weight:600}
+.ws .xv{font:500 11px var(--sans);padding:2px 8px;border-radius:999px;border:1px solid rgba(74,222,128,.4);color:#4ade80}
+.ws .xnums{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px;margin-top:12px}
+.ws .xnums b{display:block;font:600 19px var(--sans)}.ws .xnums span{font-size:11.5px;color:var(--dim)}
+@media (max-width:700px){.ws .risk{grid-template-columns:1fr;justify-items:center;text-align:center}.ws .risk ul{text-align:left}}
+
+/* ===== visuals: small animated pictures instead of paragraphs (they inherit the design's colour) ===== */
+.viz{position:relative;width:100%;aspect-ratio:1.5;color:inherit}
+.viz svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.viz .s{stroke:currentColor;fill:none;stroke-width:1.5;vector-effect:non-scaling-stroke}
+.viz .f{fill:currentColor}
+.viz .o2{opacity:.22}.viz .o4{opacity:.45}
+/* scanner: a document read by a moving beam */
+.v-scan .beam{animation:vbeam 2.6s cubic-bezier(.6,0,.4,1) infinite}
+@keyframes vbeam{0%{transform:translateY(0)}50%{transform:translateY(118px)}100%{transform:translateY(0)}}
+.v-scan .ck{opacity:0;animation:vck 2.6s infinite}.v-scan .ck:nth-of-type(2){animation-delay:.35s}.v-scan .ck:nth-of-type(3){animation-delay:.7s}
+@keyframes vck{30%,80%{opacity:1}0%,20%,100%{opacity:0}}
+/* radar: rings, a sweep and real launches as blips */
+.v-radar .sweep{position:absolute;left:50%;top:50%;width:84%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:conic-gradient(from 0deg,currentColor 0deg,transparent 70deg);opacity:.22;animation:vspin 3.2s linear infinite;-webkit-mask:radial-gradient(circle,#000 69%,transparent 70%);mask:radial-gradient(circle,#000 69%,transparent 70%)}
+@keyframes vspin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.v-radar .blip{position:absolute;width:7px;height:7px;margin:-3.5px;border-radius:50%;background:currentColor;animation:vblip 3.2s infinite}
+.v-radar .blip.bad{background:#ef4444}
+@keyframes vblip{0%,100%{opacity:.25;transform:scale(.8)}10%{opacity:1;transform:scale(1.4)}}
+/* sniper: a reticle that locks */
+.v-snipe .ret{transform-origin:150px 100px;animation:vlock 2.8s cubic-bezier(.6,0,.2,1) infinite}
+@keyframes vlock{0%{transform:translate(-46px,24px) scale(1.25)}45%,85%{transform:none}100%{transform:translate(-46px,24px) scale(1.25)}}
+.v-snipe .hit{transform-origin:150px 100px;animation:vhit 2.8s infinite}
+@keyframes vhit{0%,44%{opacity:0;transform:scale(.4)}55%{opacity:1;transform:scale(1)}85%{opacity:1}100%{opacity:0}}
+/* fee claimer: many accounts flow into one wallet */
+.v-fees .flow{stroke-dasharray:4 7;animation:vflow 1.2s linear infinite}
+@keyframes vflow{to{stroke-dashoffset:-22}}
+.v-fees .acc{animation:vpulse 2.4s infinite}
+@keyframes vpulse{50%{opacity:.35}}
+/* launchpad: a bonding curve fills to graduation */
+.v-launch .curve{stroke-dasharray:320;stroke-dashoffset:320;animation:vdraw 3.4s cubic-bezier(.5,0,.3,1) infinite}
+@keyframes vdraw{0%{stroke-dashoffset:320}60%,90%{stroke-dashoffset:0}100%{stroke-dashoffset:0;opacity:0}}
+.v-launch .grad{transform-origin:244px 38px;animation:vgrad 3.4s infinite}
+@keyframes vgrad{0%,55%{transform:scale(0)}65%,90%{transform:scale(1)}100%{transform:scale(1);opacity:0}}
+/* launch kit: lines being written */
+.v-kit .ln{transform-origin:left;animation:vtype 3s steps(14) infinite}
+.v-kit .ln:nth-of-type(2){animation-delay:.4s}.v-kit .ln:nth-of-type(3){animation-delay:.8s}.v-kit .ln:nth-of-type(4){animation-delay:1.2s}
+@keyframes vtype{0%{transform:scaleX(0)}40%,90%{transform:scaleX(1)}100%{transform:scaleX(0)}}
+/* agent studio: a conversation */
+.v-agent .b1{animation:vb 4s infinite}.v-agent .b2{animation:vb 4s 1.2s infinite}.v-agent .b3{animation:vb 4s 2.2s infinite}
+@keyframes vb{0%,10%{opacity:0;transform:translateY(6px)}20%,85%{opacity:1;transform:none}100%{opacity:0}}
+.v-agent .td{animation:vdot 1s infinite}.v-agent .td:nth-of-type(2){animation-delay:.15s}.v-agent .td:nth-of-type(3){animation-delay:.3s}
+@keyframes vdot{50%{opacity:.2}}
+/* AI picks: a score ring */
+.v-pick .ring{stroke-dasharray:283;stroke-dashoffset:283;animation:vscore 3s cubic-bezier(.5,0,.2,1) infinite;transform:rotate(-90deg);transform-origin:150px 100px}
+@keyframes vscore{0%{stroke-dashoffset:283}50%,90%{stroke-dashoffset:62}100%{stroke-dashoffset:62;opacity:0}}
+/* directives */
+.v-key .cross{stroke-dasharray:130;stroke-dashoffset:130;animation:vdraw2 3s infinite}
+@keyframes vdraw2{0%,20%{stroke-dashoffset:130}50%,90%{stroke-dashoffset:0}100%{stroke-dashoffset:0}}
+.v-clamp .val{animation:vclamp 2.6s cubic-bezier(.5,0,.3,1) infinite}
+@keyframes vclamp{0%{transform:translateX(-70px)}40%{transform:translateX(110px)}55%,85%{transform:translateX(64px)}100%{transform:translateX(-70px)}}
+.v-trace .tx{stroke-dasharray:6 6;animation:vflow 1s linear infinite}
+.v-trace .node{animation:vpulse 2s infinite}.v-trace .node:nth-of-type(2){animation-delay:.3s}.v-trace .node:nth-of-type(3){animation-delay:.6s}
+@media (prefers-reduced-motion:reduce){.viz *{animation:none!important}}
+
+.ws .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.ws .tabs button{font:600 13.5px var(--sans);color:var(--mid);background:rgba(22,21,20,.6);border:1px solid var(--line2);border-radius:999px;padding:10px 18px;cursor:pointer;transition:all .2s}
+.ws .tabs button:hover{color:var(--text);border-color:var(--text)}
+.ws .tabs button.on{background:var(--acc);border-color:var(--acc);color:#161514}
+.ws .tool{display:none;padding:22px;min-height:380px}
+.ws .tool.on{display:block;animation:fade .4s ease}
+.ws .inrow{display:flex;gap:10px;margin-bottom:18px}
+.ws .inrow input{flex:1;min-width:0;background:#161514;border:1px solid var(--line2);color:var(--text);border-radius:999px;padding:13px 18px;font:13px var(--mono)}
+.ws .inrow input:focus,.ws .grid2 input:focus,.ws .grid2 textarea:focus,.ws .grid2 select:focus{outline:none;border-color:var(--acc)}
+.ws .empty{color:var(--dim);margin:30px 0;text-align:center;max-width:560px;margin-inline:auto}
+.ws .note{color:var(--dim);font-size:12.5px;margin:16px 0 0}
+.ws .err{color:#ff8a8d;border:1px solid rgba(229,72,77,.35);background:rgba(229,72,77,.06);border-radius:10px;padding:12px 14px}
+.ws .load{display:flex;align-items:center;gap:12px;color:var(--mid);padding:30px 0;justify-content:center}
+.ws .load i{width:14px;height:14px;border:2px solid var(--acc2);border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ws .btn:disabled{opacity:.5;cursor:wait}
+.ws .rh{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.ws .rh img{width:56px;height:56px;border-radius:12px;object-fit:cover;background:#1d1c1a;border:1px solid var(--line)}
+.ws .rh h3{margin:0;font:800 28px/1 var(--sans);letter-spacing:-.03em}
+.ws .rh h3 span{color:var(--dim);font-size:16px;margin-left:8px}
+.ws .rh .ca{font:12px var(--mono);color:var(--mid);margin-top:6px;word-break:break-all}
+.ws .rh .links{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.ws .chipl{font:500 12px var(--sans);border:1px solid var(--line2);border-radius:999px;padding:6px 12px;text-decoration:none;color:var(--mid)}
+.ws .chipl:hover{border-color:var(--acc);color:var(--text)}
+.ws .read{font:600 17px/1.5 var(--sans);margin:6px 0 16px}
+.ws .flags{display:grid;gap:8px;margin-bottom:16px}
+.ws .fl{display:grid;grid-template-columns:70px 1fr;gap:12px;align-items:start;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#161514}
+.ws .fl b{display:block;font-size:14px}
+.ws .fl span.d{color:var(--mid);font-size:13px}
+.ws .lv{font:800 10px var(--sans);letter-spacing:.12em;border-radius:999px;padding:5px 0;text-align:center;height:fit-content;text-transform:uppercase}
+.ws .lv.high{background:var(--high);color:#F5F3EC}
+.ws .lv.watch{background:var(--watch);color:#1d1c1a}
+.ws .lv.ok{background:var(--ok);color:#04140a}
+.ws .lv.info{background:#2f2d2a;color:var(--text)}
+.ws .nums{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:16px}
+.ws .nums div{background:#1d1c1a;padding:14px}
+.ws .nums b{display:block;font:800 22px var(--sans);letter-spacing:-.03em;margin:4px 0 2px}
+.ws .nums small{color:var(--dim);font-size:12px}
+.ws .pbar{height:3px;background:var(--line2);border-radius:3px;overflow:hidden;margin:6px 0}
+.ws .pbar i{display:block;height:100%;background:var(--acc)}
+.ws .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ws table{width:100%;border-collapse:collapse;font-size:13.5px}
+.ws td{padding:8px 4px;border-top:1px solid var(--line)}
+.ws td.r{text-align:right}
+.ws td a{color:var(--text)}
+.ws .pill{font:500 10px var(--mono);border:1px solid var(--line2);border-radius:999px;padding:2px 7px;margin-left:6px;color:var(--mid)}
+.ws .bar2{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.ws .tog{display:flex;align-items:center;gap:8px;color:var(--mid);font-size:13px;cursor:pointer}
+.ws .tog input{accent-color:var(--acc)}
+.ws .rrow{display:grid;grid-template-columns:44px minmax(0,1.3fr) 70px minmax(0,1fr) 92px 120px;gap:14px;align-items:center;padding:12px 4px;border-top:1px solid var(--line)}
+.ws .rrow img,.ws .rrow .ph{width:40px;height:40px;border-radius:10px;object-fit:cover;background:#1d1c1a;border:1px solid var(--line)}
+.ws .rrow .nm b{display:block;font:800 16px var(--sans)}
+.ws .rrow .nm span{color:var(--dim);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.ws .rrow .age{font:12px var(--mono);color:var(--mid)}
+.ws .checks{display:flex;flex-wrap:wrap;gap:4px}
+.ws .ck{font:500 11px var(--sans);border-radius:999px;padding:3px 8px;border:1px solid var(--line2);color:var(--mid);white-space:nowrap}
+.ws .ck.no{border-color:rgba(229,72,77,.45);color:#ff8a8d}
+.ws .verdict{font:800 11px var(--sans);letter-spacing:.12em;text-align:center;border-radius:999px;padding:6px 0}
+.ws .verdict.p{background:rgba(63,185,80,.14);color:var(--ok);border:1px solid rgba(63,185,80,.4)}
+.ws .verdict.s{background:transparent;color:var(--dim);border:1px solid var(--line2)}
+.ws .ract{display:flex;gap:6px;justify-content:flex-end}
+.ws .ract button,.ws .ract a{font:600 12px var(--sans);border:1px solid var(--line2);background:transparent;color:var(--text);border-radius:999px;padding:6px 10px;cursor:pointer;text-decoration:none}
+.ws .ract button:hover,.ws .ract a:hover{border-color:var(--acc)}
+.ws .total{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:18px;border:1px solid var(--acc2);background:var(--acc3);border-radius:12px;margin-bottom:16px}
+.ws .total b{font:800 34px var(--sans);letter-spacing:-.03em}
+.ws .steps2{font:12.5px var(--mono);color:var(--mid);margin-top:12px;display:grid;gap:4px}
+.ws .steps2 .ok{color:var(--ok)}
+.ws .steps2 .bad{color:#ff8a8d}
+.ws .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ws .grid2 label{display:grid;gap:6px;font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.ws .grid2 .full{grid-column:1/-1}
+.ws .grid2 input,.ws .grid2 textarea,.ws .grid2 select{background:#161514;border:1px solid var(--line2);color:var(--text);border-radius:12px;padding:12px 14px;font:14px var(--sans);letter-spacing:0;text-transform:none;resize:vertical}
+.ws .kit{margin-top:22px;display:grid;gap:12px}
+.ws .kc{border:1px solid var(--line);border-radius:12px;padding:16px;background:#161514;position:relative}
+.ws .kc h5{margin:0 0 8px;font:500 11px var(--mono);letter-spacing:.14em;color:var(--acc);text-transform:uppercase}
+.ws .kc p{margin:0;white-space:pre-wrap}
+.ws .kc .cp{position:absolute;right:10px;top:10px;font:600 11px var(--sans);border:1px solid var(--line2);background:transparent;color:var(--mid);border-radius:999px;padding:4px 10px;cursor:pointer}
+.ws .kc .cp:hover{color:var(--text);border-color:var(--acc)}
+.ws .kc ol{margin:0;padding-left:18px;display:grid;gap:8px}
+.ws .studio{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:20px}
+.ws .chat{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;background:#161514;padding:14px;min-height:360px}
+.ws .msgs{flex:1;overflow:auto;display:flex;flex-direction:column;gap:8px;max-height:380px;margin-bottom:12px}
+.ws .m{max-width:82%;padding:10px 13px;border-radius:14px;font-size:14px;white-space:pre-wrap}
+.ws .m.u{align-self:flex-end;background:var(--text);color:#1d1c1a;border-bottom-right-radius:4px}
+.ws .m.a{align-self:flex-start;background:#22201e;border:1px solid var(--line);border-bottom-left-radius:4px}
+.ws .m.a.wait{color:var(--dim)}
+@media (max-width:1000px){.ws .nums{grid-template-columns:1fr 1fr}.ws .two,.ws .studio,.ws .grid2{grid-template-columns:1fr}.ws .rrow{grid-template-columns:40px minmax(0,1fr) 84px;row-gap:8px}.ws .rrow .age{display:none}.ws .rrow .checks{grid-column:1/-1}.ws .rrow .ract{grid-column:1/-1;justify-content:flex-start}.ws .rrow .pg{display:none}}
+@media (max-width:560px){.ws .inrow{flex-wrap:wrap}.ws .inrow input{flex-basis:100%}.ws .tool{padding:16px}}
+.ws .sn{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:22px}
+.ws .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.ws .grid3 label{display:grid;gap:5px;font:500 10px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.ws .grid3 input,.ws .grid3 select{background:#161514;border:1px solid var(--line2);color:var(--text);border-radius:10px;padding:9px 11px;font:14px var(--sans);min-width:0}
+.ws .grid3 input:focus,.ws .grid3 select:focus{outline:none;border-color:var(--acc)}
+.ws .log2{font:12px/1.6 var(--mono);color:var(--mid);background:#161514;border:1px solid var(--line);border-radius:12px;padding:10px 12px;height:300px;overflow:auto;margin-top:6px}
+.ws .log2 span{color:var(--dim)}
+.ws .log2 .ok{color:var(--ok)}
+.ws .log2 .bad{color:#ff8a8d}
+.ws .log2 .dry{color:var(--acc)}
+@media (max-width:1000px){.ws .sn{grid-template-columns:1fr}.ws .grid3{grid-template-columns:1fr 1fr}}
+.ws .fmode{display:inline-flex;gap:4px;padding:4px;border:1px solid var(--line2);border-radius:999px;margin-bottom:16px}
+.ws .fmode button{font:600 13px var(--sans);background:transparent;border:0;color:var(--mid);padding:8px 14px;border-radius:999px;cursor:pointer}
+.ws .fmode button.on{background:var(--text);color:#1d1c1a}
+.ws .warnbox{border:1px solid var(--acc2);background:var(--acc3);border-radius:12px;padding:12px 14px;font-size:13.5px;color:var(--mid)}
+.ws .warnbox b{color:var(--text)}
+.ws .words{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+.ws .words label{display:flex;align-items:center;gap:8px;background:#161514;border:1px solid var(--line2);border-radius:10px;padding:0 10px}
+.ws .words label:focus-within{border-color:var(--acc)}
+.ws .words span{font:500 11px var(--mono);color:var(--dim);width:18px}
+.ws .words input{flex:1;min-width:0;background:transparent;border:0;color:var(--text);padding:10px 0;font:14px var(--mono);outline:none}
+.ws .selsm{background:#161514;border:1px solid var(--line2);color:var(--text);border-radius:8px;padding:6px 8px;font:13px var(--sans)}
+@media (max-width:700px){.ws .words{grid-template-columns:repeat(2,1fr)}}
+.ws .snhead{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:flex-start;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.ws .snbtns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ws .pill2{font:600 12px var(--sans);border:1px solid var(--line2);border-radius:999px;padding:7px 12px;color:var(--mid)}
+.ws .pill2.dry{border-color:var(--acc2);color:var(--acc)}
+.ws .pill2.live{border-color:rgba(63,185,80,.5);color:var(--ok)}
+.ws .btn.danger{background:transparent;border-color:rgba(229,72,77,.5);color:#ff8a8d}
+.ws .btn.danger:hover{background:rgba(229,72,77,.12);box-shadow:none}
+.ws .snsec{margin-top:20px}
+.ws .snmode{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.ws .snmode button{text-align:left;font:600 14px var(--sans);color:var(--mid);background:transparent;border:1px solid var(--line2);border-radius:4px;padding:12px 14px;cursor:pointer}
+.ws .snmode button small{display:block;font:400 12.5px var(--sans);color:var(--dim);margin-top:3px}
+.ws .snmode button.on{color:var(--text);border-color:var(--acc);background:var(--acc3)}
+.ws .picks{display:grid;gap:8px}
+.ws .agbox{margin-top:10px;border:1px solid var(--line);border-radius:4px;padding:16px 18px;background:linear-gradient(180deg,var(--acc3),transparent)}
+.ws .agtop{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.ws .agtop p{margin:6px 0 0;color:var(--mid);font-size:13px}
+.ws .agval{display:flex;align-items:baseline;gap:4px;white-space:nowrap}
+.ws .agval b{font:800 34px/1 var(--sans);color:var(--acc);letter-spacing:-.03em}
+.ws .agval span{font:500 12px var(--mono);color:var(--dim)}
+.ws #snMinScore{-webkit-appearance:none;appearance:none;width:100%;height:4px;margin:16px 0 8px;border-radius:4px;background:linear-gradient(90deg,var(--acc) var(--p,55%),var(--line2) var(--p,55%));outline:none;cursor:pointer}
+.ws #snMinScore::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--acc);border:3px solid #161514;box-shadow:0 0 0 1px var(--acc),0 0 16px rgba(245,243,236,0.42)}
+.ws #snMinScore::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--acc);border:3px solid #161514;box-shadow:0 0 0 1px var(--acc),0 0 16px rgba(245,243,236,0.42)}
+.ws .agticks{display:flex;justify-content:space-between;font:500 10.5px var(--mono);letter-spacing:.06em;color:var(--dim)}
+.ws .agnote{margin:12px 0 0;padding-top:12px;border-top:1px solid var(--line);color:var(--dim);font-size:12.5px}
+.ws .ring{--v:0;--c:var(--acc);width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--c) calc(var(--v)*1%),rgba(245,243,236,.07) 0);position:relative}
+.ws .ring:before{content:"";position:absolute;inset:4px;border-radius:50%;background:#1d1c1a}
+.ws .ring b{position:relative;font:800 16px var(--sans);color:var(--text);letter-spacing:-.02em}
+.ws .pick{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:4px;padding:10px 12px;background:rgba(0,0,0,.3)}
+.ws .pick .nm{font-weight:600}
+.ws .pick .rs{color:var(--mid);font-size:13px}
+.ws .pick .mt{color:var(--dim);font:500 11.5px var(--mono)}
+@media(max-width:640px){.ws .snmode{grid-template-columns:1fr}.ws .pick{grid-template-columns:48px minmax(0,1fr)}.ws .pick .btn{grid-column:span 2}}
+.ws .snsec h4{margin:0 0 10px;font:800 15px var(--sans);text-transform:uppercase;letter-spacing:.02em}
+.ws tr.th td{color:var(--dim);font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;border-top:0}
+.ws #snForm details summary{cursor:pointer;color:var(--mid);font-size:13px}
+.ws #snForm .grid3 label small{font:400 11px var(--sans);letter-spacing:0;text-transform:none;color:var(--dim)}
+.ws #snForm textarea{background:#161514;border:1px solid var(--line2);color:var(--text);border-radius:10px;padding:9px 11px;font:13px var(--mono);resize:vertical;min-width:0}
+.ws .tablink{font:600 13.5px var(--sans);color:var(--acc);border:1px dashed var(--acc2);border-radius:999px;padding:10px 18px;text-decoration:none}
+.ws .tablink:hover{border-style:solid}
+.ws .lp{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,.65fr);gap:22px;align-items:start}
+.ws #lpForm{display:grid;gap:14px}
+.ws #lpForm label{display:grid;gap:6px;font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.ws #lpForm label small{font:400 12px var(--sans);letter-spacing:0;text-transform:none;color:var(--dim)}
+.ws #lpForm input,.ws #lpForm textarea{background:#161514;border:1px solid var(--line2);color:var(--text);border-radius:12px;padding:12px 14px;font:14px var(--sans);letter-spacing:0;text-transform:none;min-width:0;resize:vertical}
+.ws #lpForm input:focus,.ws #lpForm textarea:focus{outline:none;border-color:var(--acc)}
+.ws .lpgrid{display:grid;grid-template-columns:190px 1fr;gap:16px}
+.ws .lpcol{display:grid;gap:12px;align-content:start}
+.ws .lpgrid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ws .drop{position:relative;aspect-ratio:1;border:1px dashed var(--acc2);border-radius:16px;background:#161514;display:grid;place-items:center;text-align:center;cursor:pointer;overflow:hidden;transition:border-color .2s,background .2s}
+.ws .drop:hover,.ws .drop.over{border-color:var(--acc);background:var(--acc3)}
+.ws .drop img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ws .drop b{display:block;font:800 15px var(--sans);margin-bottom:4px}
+.ws .drop span{color:var(--dim);font-size:12px}
+.ws .taxes{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.ws .taxes button{font:700 14px var(--sans);background:#161514;border:1px solid var(--line2);color:var(--mid);border-radius:10px;padding:11px 0;cursor:pointer}
+.ws .taxes button.on{background:var(--acc);border-color:var(--acc);color:#161514}
+.ws .lpside{position:sticky;top:90px}
+@media (max-width:1000px){.ws .lp{grid-template-columns:1fr}.ws .lpside{position:static}.ws .lpgrid{grid-template-columns:140px 1fr}.ws .lpgrid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header class="nav"><div class="wrap">
+  <a class="brand" href="#top" id="home"><svg class="glyph" viewBox="22 14 222 222" aria-hidden="true"><g><path d="M219.3 98.33A96 96 0 1 1 157.67 36.7" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round"/><ellipse cx="128" cy="128" rx="84" ry="28" transform="rotate(-18 128 128)" fill="none" stroke="currentColor" stroke-width="10"/><circle cx="195.88" cy="60.12" r="23" fill="currentColor"/></g></svg><span><b>signal</b> agent</span></a>
+  <nav><a href="#band">The map</a><a href="#how">How it works</a><a href="#tools">Tools</a><a href="#token">Token</a></nav>
+  <div class="r">
+    <a class="ic" href="https://x.com/signalagentai" target="_blank" rel="noopener" aria-label="Signal on X"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+    <button class="btn line" type="button" id="holderBtn">Holder access</button>
+    <a class="btn solid" id="buyNova" aria-disabled="true">Token · Soon</a>
+  </div>
+</div></header>
+
+<canvas id="atlas" aria-hidden="true"></canvas><div id="labels" aria-hidden="true"></div>
+<main>
+  <section class="hero" id="top" data-sec="hero">
+    <div class="veil" aria-hidden="true"></div>
+    <div class="dive" aria-hidden="true"><p>Every launch is a star.</p><p><span>Only a few get a name.</span></p></div>
+    <div class="fieldcap"><span class="sc bl">Drag to turn the map</span><span class="sc br"><b id="scSig">0</b> signal · <b id="scNoise">0</b> noise</span></div>
+    <div class="wrap hgrid">
+      <div class="hl">
+        <p class="kick"><i></i>Charting<span class="bk">&nbsp;· block <span id="nBlock">—</span></span>&nbsp;· <span id="nLaunch">—</span> launches today</p>
+        <h1>Map the noise.<br><span>Name the signal.</span></h1>
+        <div class="convo">
+          <div class="thread" id="thread" aria-live="polite"></div>
+          <form class="box" id="ask" autocomplete="off">
+            <textarea id="askIn" rows="1" placeholder="Ask Signal, or paste a token CA" aria-label="Message Signal"></textarea>
+            <button class="send" id="send" type="submit" aria-label="Send" disabled><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </form>
+          <div class="under"><span class="hint" id="hint">On-chain data only. Signal never asks for your keys.</span>
+            <span class="asks"><button type="button" data-ask="What is a real signal on Pons right now?">What's a signal now?</button><button type="button" data-ask="Which new launches are noise or traps, and why?">What's noise?</button></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="tape" aria-label="Newest launches"><div class="tt" id="tape"></div></div>
+
+  <section class="band" id="band" data-sec="band">
+    <div class="wrap">
+      <div class="rv bh"><div><p class="kick plain">Newest on the map</p><h2>The newest stars.</h2></div><p class="tally"><b id="tRx">0</b> received <span>·</span> <b class="s" id="tSig">0</b> signal <span>·</span> <b id="tNoise">0</b> noise</p></div>
+      <div class="rv rows" id="rows"></div>
+      <p class="fine">Signal means every check passed: the dev still holds, tax is fair, socials are set, and new buyers keep arriving. Not advice.</p>
+    </div>
+  </section>
+
+  <section class="how" id="how" data-sec="how">
+    <div class="wrap hw">
+      <div class="hp">
+        <p class="kick plain">How it works</p>
+        <h2>Map the noise.<br><span>Name the signal.</span></h2>
+        <div class="hsteps">
+          <div class="hs on"><span class="n">01</span><b>Chart</b><span>Every Pons launch on Robinhood Chain appears on the map the block it happens.</span></div>
+          <div class="hs"><span class="n">02</span><b>Measure</b><span>Did the dev dump? Bundled wallets? A fake X? Are buyers still arriving? Every star is measured.</span></div>
+          <div class="hs"><span class="n">03</span><b>Name</b><span>Only the ones that truly shine get a name, with every reason, in plain words.</span></div>
+        </div>
+        <div class="meter"><i></i></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tools inv" id="tools">
+    <div class="wrap">
+      <p class="rv kick plain">Tools</p>
+      <h2 class="rv">Seven instruments for the map.</h2>
+      <div class="rv tgrid">
+        <a href="#app" data-open="scan"><span>Scanner</span><small>A full report on any token: rug risk, bundles, X check.</small></a>
+        <a href="#app" data-open="radar"><span>Launch Radar</span><small>Every new launch, filtered live.</small></a>
+        <a href="#app" data-open="snipe"><span>Sniper</span><small>Manual, or let the agent buy the signal.</small></a>
+        <a href="#app" data-open="fees"><span>Fee Claimer</span><small>Creator fees from one wallet or 200 accounts.</small></a>
+        <a href="#app" data-open="launch" class="free"><span>Pons Launchpad</span><small>Launch from your own wallet. Always free.</small></a>
+        <a href="#app" data-open="kit"><span>Launch Kit</span><small>Lore, bio, thread and launch post, written for you.</small></a>
+        <a href="#app" data-open="agent"><span>Agent Studio</span><small>Design the AI agent of your own token.</small></a>
+        <a href="#top" class="ask free-none" id="askCell"><span>Ask Signal →</span><small>Not sure where to start? Ask the map.</small></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="token" id="token" data-sec="token">
+    <div class="wrap tk2">
+      <div class="tc">
+        <p class="kick plain">Token</p><h2>Own a piece<br><span>of the map.</span></h2><p class="lead">Hold 0.1% of the token supply and sign once with your wallet: every tool opens. Signing is free and sends nothing. The Pons Launchpad stays free for everyone.</p>
+        <div class="cta"><a class="btn solid lg" id="buy2" aria-disabled="true">Token · Soon</a><button class="btn line lg" type="button" data-unlock>Holder access</button></div>
+        <dl class="facts"><div><dt>Ticker</dt><dd id="tkSym">—</dd></div><div><dt>Chain</dt><dd>Robinhood Chain</dd></div><div><dt>Launched on</dt><dd>Pons</dd></div><div><dt>Unlock</dt><dd>0.1% of supply</dd></div><div><dt>Contract</dt><dd><button type="button" id="caCopy" class="ca">—</button></dd></div></dl>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="inv">
+  <div class="wrap fr">
+    <a class="brand" href="#top"><svg class="glyph" viewBox="22 14 222 222" aria-hidden="true"><g><path d="M219.3 98.33A96 96 0 1 1 157.67 36.7" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round"/><ellipse cx="128" cy="128" rx="84" ry="28" transform="rotate(-18 128 128)" fill="none" stroke="currentColor" stroke-width="10"/><circle cx="195.88" cy="60.12" r="23" fill="currentColor"/></g></svg><span><b>signal</b> agent</span></a>
+    <span class="links"><a href="https://x.com/signalagentai" target="_blank" rel="noopener">X</a><a href="#tools">Tools</a><a href="#token">Token</a></span>
+  </div>
+  <div class="wrap fr small"><span>© 2026 Signal Agent. Map the noise, name the signal.</span><span>Not financial advice. On-chain data only.</span></div>
+</footer>
+
+<div class="drawer" id="drawer" hidden>
+  <div class="dhead"><span><b id="dTitle">Tools</b></span><button type="button" class="ic" id="dClose" aria-label="Close tools">×</button></div>
+  <div class="dbody" id="app"><div class="ws">
+  <div class="ws-bar"><span>Signal <b>Workspace</b></span><span class="t" id="wsTitle">Scanner</span><span class="r"><i class="dot"></i>Live · Robinhood Chain</span></div>
+  <div class="ws-body">
+    <div class="tabs" role="tablist" id="tabs">
+      <button role="tab" data-t="scan"><span class="ti">01</span><span class="tn">Scanner</span><span class="td">Token report</span></button>
+      <button role="tab" data-t="radar"><span class="ti">02</span><span class="tn">Launch Radar</span><span class="td">Live launches</span></button>
+      <button role="tab" data-t="snipe"><span class="ti">03</span><span class="tn">Sniper</span><span class="td">Manual &amp; agent</span></button>
+      <button role="tab" data-t="fees"><span class="ti">04</span><span class="tn">Fee Claimer</span><span class="td">One or 200 accounts</span></button>
+      <span class="sep"></span>
+      <button role="tab" data-t="launch"><span class="ti">05</span><span class="tn">Pons Launchpad</span><span class="td">Always free</span></button>
+      <button role="tab" data-t="kit"><span class="ti">06</span><span class="tn">Launch Kit</span><span class="td">AI copywriter</span></button>
+      <button role="tab" data-t="agent"><span class="ti">07</span><span class="tn">Agent Studio</span><span class="td">Design your AI</span></button>
+      <div class="tside">KEYS HELD · 0<br>SEEDS SAVED · 0<br>MODEL · SIGNAL</div>
+    </div>
+    <div class="panes">
+<div class="tool panel hud" data-p="launch">
+        <div class="lp">
+          <form id="lpForm" autocomplete="off">
+            <div class="lpgrid">
+              <div class="drop" id="lpDrop">
+                <input type="file" id="lpFile" accept="image/png,image/jpeg,image/gif,image/webp" hidden>
+                <img id="lpPrev" alt="" hidden>
+                <div id="lpDropTxt"><b>Upload logo</b><span>PNG, JPG, GIF or WEBP · max 5MB<br>click or drop here</span></div>
+              </div>
+              <div class="lpcol">
+                <label>Name<input name="name" maxlength="32" placeholder="e.g. Robinhood Doge" required></label>
+                <label>Ticker<input name="symbol" maxlength="10" placeholder="e.g. RDOGE" required></label>
+                <label>Or paste an image link<input name="logoUrl" placeholder="https://…" spellcheck="false"></label>
+                <div id="lpUpMsg" class="note" style="margin:0"></div>
+              </div>
+            </div>
+            <label class="full">Description<textarea name="description" rows="3" maxlength="500" placeholder="Tell the story of your token and community"></textarea></label>
+            <div class="full"><span class="lbl">Creator tax <b id="lpTaxLbl">1% (100 bps)</b></span><p class="note" style="margin:4px 0 8px">Paid to your wallet on every buy and sell on the bonding curve (max 10%).</p>
+              <div class="taxes" id="lpTaxes"><button type="button" data-tax="0">0%</button><button type="button" data-tax="1" class="on">1%</button><button type="button" data-tax="2">2%</button><button type="button" data-tax="3">3%</button><button type="button" data-tax="5">5%</button></div></div>
+            <div class="lpgrid2">
+              <label>Website<input name="website" placeholder="Website URL"></label>
+              <label>Twitter / X<input name="twitter" placeholder="https://x.com/…"></label>
+              <label>Telegram<input name="telegram" placeholder="https://t.me/…"></label>
+              <label>Discord<input name="discord" placeholder="https://discord.gg/…"></label>
+            </div>
+            <label class="full">Dev buy (optional, ETH)<span class="inrow" style="margin:6px 0 0"><input name="devBuy" inputmode="decimal" placeholder="0.0 (ETH)"><button class="btn sm ghost" type="button" id="lpMax">MAX</button></span><span id="lpDevHint" class="note" style="margin:6px 0 0"></span></label>
+            <label class="full">Snipe tax exempt wallets (optional)<small>Pons taxes buys in the first seconds after launch (up to 99%). Wallets listed here pay 0% snipe tax on this launch, e.g. your Signal sniper wallet.</small>
+              <span class="inrow" style="margin:6px 0 0"><input name="exempt" placeholder="0x…, 0x…" spellcheck="false"><button class="btn sm ghost" type="button" id="lpAddSniper">Add my sniper wallet</button></span></label>
+          </form>
+          <aside class="lpside">
+            <div class="kc">
+              <h5>Robinhood Chain · Pons</h5>
+              <div class="mono" id="lpWallet" style="font-size:12.5px;word-break:break-all">Wallet not connected</div>
+              <table style="margin-top:10px">
+                <tr><td>Launch fee</td><td class="r" id="lpFee">…</td></tr>
+                <tr><td>Dev buy</td><td class="r" id="lpDev">0 ETH</td></tr>
+                <tr><td><b>Total</b></td><td class="r"><b id="lpTotal">…</b></td></tr>
+                <tr><td>Your balance</td><td class="r" id="lpBal">—</td></tr>
+                <tr><td>Creator tax</td><td class="r" id="lpTax2">1%</td></tr>
+              </table>
+              <div style="display:grid;gap:8px;margin-top:14px">
+                <button class="btn ghost" type="button" id="lpConnect">Connect wallet</button>
+                <button class="btn" type="button" id="lpGo">Launch token <span class="ar">→</span></button>
+              </div>
+              <div id="lpMsg" class="steps2"></div>
+            </div>
+            <div id="lpDone"></div>
+          </aside>
+        </div>
+      </div>
+
+      <div class="tool panel hud rv" data-p="scan">
+        <form class="inrow" id="scanForm"><input id="scanCa" placeholder="Paste a Pons token address (0x…)" spellcheck="false" autocomplete="off"><button class="btn sm" id="scanGo">Scan</button></form>
+        <div id="scanOut"><p class="empty">Paste any Pons token CA. Signal checks the deployer, holders, first-minute buyers and the dev's other launches.</p></div>
+      </div>
+
+      <div class="tool panel hud" data-p="radar">
+        <div class="bar2"><span class="lbl">Newest Pons launches · <b id="radarHead">reading…</b></span><label class="tog"><input type="checkbox" id="onlyPass"> only launches that pass</label></div>
+        <div id="radarOut"><p class="empty">Reading the newest launches…</p></div>
+        <p class="note">PASS means clean and growing: the dev has not dumped their bag (a partial sell while still holding is fine), the dev holds under 15%, creator tax ≤ 3%, socials set, the dev is not launching many tokens, fees go to the dev, and buyers keep arriving (at least 1 new buyer a minute since launch, or 8+ new buyers in the last 15 minutes). Not advice.</p>
+      </div>
+
+      <div class="tool panel hud" data-p="snipe">
+        <div class="snhead">
+          <div><span class="lbl">Sniper wallet</span><div class="mono" id="snAddr" style="margin-top:6px;word-break:break-all">No private key yet</div><div id="snBalLine" class="note" style="margin:4px 0 0"></div></div>
+          <div class="snbtns"><span class="pill2" id="snState">Off</span><button class="btn sm ghost" type="button" id="snDry">Start dry run (no money)</button><button class="btn sm" type="button" id="snLiveBtn">Start LIVE</button><button class="btn sm danger" type="button" id="snStop">Stop</button></div>
+        </div>
+        <div class="snmode" id="snModeSw">
+          <button type="button" data-mode="manual">Manual snipe<small>Your filters below catch every new launch in its first seconds</small></button>
+          <button type="button" data-mode="agent">Agent snipe<small>Signal's AI scores fresh radar launches; the bot buys the ones above your minimum score</small></button>
+        </div>
+        <div id="snAgentBox" class="agbox" hidden>
+          <div class="agtop"><div><span class="lbl">Minimum Signal score</span><p>The agent buys only picks at or above this score. Higher = fewer, stronger picks.</p></div>
+            <div class="agval"><b id="snMinVal">75</b><span>/100</span></div></div>
+          <input type="range" id="snMinScore" min="50" max="95" step="5" aria-label="Minimum Signal score">
+          <div class="agticks"><span>50 · more buys</span><span>95 · only the best</span></div>
+          <p class="agnote">Buy size, budget, take profit, stop loss, max positions, tax limits and blocked devs/keywords from Settings still apply. Each token is bought once.</p>
+        </div>
+        <div id="snMsg" class="note"></div>
+
+        <div class="snsec"><h4>Manual buy</h4>
+          <div class="inrow" style="margin:0"><input id="mbToken" placeholder="Token CA 0x…" spellcheck="false" autocomplete="off"><input id="mbEth" placeholder="ETH (empty = buy per snipe)" style="flex:0 1 220px"><button class="btn sm" type="button" id="mbGo">Buy now</button></div>
+          <div id="mbMsg" class="note" style="margin-top:8px"></div>
+        </div>
+
+        <div class="snsec"><div class="bar2" style="margin:0 0 6px"><h4 style="margin:0">Signal picks</h4><span style="display:flex;gap:10px;align-items:center"><span class="note" id="pkStat" style="margin:0"></span><button class="btn sm ghost" type="button" id="pkRefresh">Refresh</button></span></div>
+          <p class="note" style="margin:0 0 10px">Fresh launches (under 1 hour) that passed every radar check and scored highest with Signal's AI. A score is a read of on-chain data, not a promise. Agent snipe buys these automatically.</p>
+          <div class="picks" id="pkList"><p class="note">Loading Signal picks…</p></div></div>
+
+        <div class="snsec"><h4>Open positions</h4><div id="snPos"><p class="note">No positions.</p></div></div>
+
+        <div class="snsec"><div class="bar2" style="margin:0 0 6px"><h4 style="margin:0">Trade history</h4><span style="display:flex;gap:10px;align-items:center"><span id="snPnl" class="note" style="margin:0"></span><button class="btn sm ghost" type="button" id="snClearHist">Clear history</button></span></div><div id="snHist"><p class="note">No finished trades yet.</p></div></div>
+
+        <div class="snsec"><h4>Bot log</h4><div class="log2" id="snLog"></div></div>
+
+        <div class="snsec"><h4>Settings</h4>
+          <form id="snForm" autocomplete="off">
+            <p class="note" style="margin:0 0 12px">Fill these 6 fields. The rest already has safe defaults.</p>
+            <div class="grid3">
+              <label>1. Sniper wallet private key<small>A dedicated wallet, not your dev wallet. Stays in this browser only. Empty = keep the saved one</small><input name="privateKey" type="password" placeholder="0x…"></label>
+              <label>2. Buy per token (ETH)<small>ETH spent on each snipe</small><input name="buyEth"></label>
+              <label>3. Total budget (ETH)<small>Stops buying after this much</small><input name="maxTotalSpendEth"></label>
+              <label>4. Take profit (%)<small>Sells when up this much</small><input name="takeProfitPercent"></label>
+              <label>5. Stop loss (%)<small>Sells when down this much</small><input name="stopLossPercent"></label>
+              <label style="grid-column:span 3">6. Only snipe tokens from these devs (0x addresses, comma separated)<small>Put your own dev wallet to snipe your own launch. Empty = snipe every new token</small><textarea name="allowedDeployers" rows="2"></textarea></label>
+            </div>
+            <details style="margin-top:14px"><summary>Advanced settings (fine to leave)</summary>
+              <div class="grid3" style="margin-top:12px">
+                <label>Max hold (seconds)<small>Force sell after this. 0 = never</small><input name="maxHoldSeconds"></label>
+                <label>Max open positions<small>Tokens held at the same time</small><input name="maxOpenPositions"></label>
+                <label>Gas reserve (ETH)<small>Balance never spent on buys</small><input name="gasReserveEth"></label>
+                <label>Slippage (%)<small>Price move tolerance</small><input name="slippagePercent"></label>
+                <label>Max creator tax (%)<small>Skip tokens with a higher dev tax</small><input name="maxCreatorTaxPercent"></label>
+                <label>Max snipe tax (%)<small>Waits until the snipe tax drops to this</small><input name="maxSnipeTaxPercent"></label>
+                <label>Max launch age (seconds)<small>Skip launches older than this</small><input name="maxLaunchAgeSeconds"></label>
+                <label>Require socials<small>Skip tokens with no X/Telegram/website on-chain</small><select name="requireSocials"><option value="0">No</option><option value="1">Yes</option></select></label>
+                <label>Max other launches by the dev (24h)<small>Skip serial launchers. 0 = not checked</small><input name="maxDeployerLaunches"></label>
+                <label>Name/ticker keywords<small>Only buy names with one of these. Empty = all</small><textarea name="keywords" rows="2"></textarea></label>
+                <label>Blocked keywords<small>Skip names with these words</small><textarea name="blockedKeywords" rows="2"></textarea></label>
+                <label>Blocked devs<small>Dev addresses never bought</small><textarea name="blockedDeployers" rows="2"></textarea></label>
+              </div>
+            </details>
+            <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="snSave">Save settings</button><button class="btn ghost" type="button" id="snNewWallet">Make a new wallet</button><button class="btn ghost" type="button" id="snExport">Export key</button><button class="btn ghost" type="button" id="snWithdraw">Withdraw ETH</button><button class="btn ghost" type="button" id="snForget">Remove key</button></div>
+          </form>
+        </div>
+        <p class="note">Same engine as the Signal sniper bot, running in this tab: it reads every new Pons launch from the chain, waits for the anti-snipe tax, buys, then sells on take profit, stop loss or max hold. The private key is kept only in this browser and signs here; Signal only relays the signed transactions. Keep the tab open while it runs.</p>
+      </div>
+
+      <div class="tool panel hud" data-p="fees">
+        <div class="fmode"><button type="button" data-m="one" class="on">One wallet</button><button type="button" data-m="seed">Many accounts (seed phrase)</button></div>
+        <div id="feeOne">
+          <form class="inrow" id="feeForm"><input id="feeWallet" placeholder="Your creator wallet (0x…)" spellcheck="false" autocomplete="off"><button class="btn sm ghost" type="button" id="feeConnect">Connect wallet</button><button class="btn sm" id="feeGo">Check</button></form>
+          <div id="feeOut"><p class="empty">See the creator fees waiting for you on every Pons token you launched, then claim them in one go from your own wallet. Signal never sees your key.</p></div>
+        </div>
+        <div id="feeSeed" hidden>
+          <div class="warnbox"><b>Your seed never leaves this browser.</b> The accounts are made here and every transaction is signed here; Signal only receives the account addresses and the already-signed transactions. The seed is not saved: it is gone when you close or reload the page. Still, a seed controls every account of the wallet. Only type it on a device you trust.</div>
+          <div class="bar2" style="margin-top:14px"><span class="lbl">Seed phrase</span><span style="display:flex;gap:14px;align-items:center"><label class="tog"><input type="checkbox" id="showWords"> show words</label><select id="wordCount" class="selsm"><option value="12">12 words</option><option value="24">24 words</option></select></span></div>
+          <div class="words" id="words"></div>
+          <p class="note" style="margin:8px 0 0">Tip: paste the whole phrase into the first box, it fills every box.</p>
+          <div class="grid3" style="grid-template-columns:120px 1fr 160px">
+            <label>Accounts<input id="seedCount" value="100" inputmode="numeric"></label>
+            <label>Send all fees to<input id="seedDest" placeholder="Account 1 of this seed" spellcheck="false"></label>
+            <label>Skip below (ETH)<input id="seedMin" value="0.0003" inputmode="decimal"></label>
+          </div>
+          <div style="display:flex;gap:10px;margin:14px 0 6px;flex-wrap:wrap"><button class="btn" type="button" id="seedScan">Scan accounts <span class="ar">→</span></button><button class="btn ghost" type="button" id="seedForget">Forget seed</button></div>
+          <div id="seedOut"></div>
+          <p class="note">Gas for accounts with no ETH is sent from Account 1, so keep a little ETH there. Accounts are the standard MetaMask / Rabby ones (Account 1, 2, 3…).</p>
+        </div>
+      </div>
+
+      <div class="tool panel hud" data-p="kit">
+        <form id="kitForm" class="grid2">
+          <label>Token name<input name="name" maxlength="40" placeholder="Moon Cat" required></label>
+          <label>Ticker<input name="ticker" maxlength="12" placeholder="$MCAT" required></label>
+          <label class="full">The idea<textarea name="idea" maxlength="400" rows="3" placeholder="A cat astronaut that only lands on tokens with real holders." required></textarea></label>
+          <label>Tone<select name="tone"><option>bold</option><option>funny</option><option>mysterious</option><option>premium</option><option>degen</option></select></label>
+          <div class="full"><button class="btn" id="kitGo">Write my launch kit <span class="ar">→</span></button></div>
+        </form>
+        <div id="kitOut"></div>
+      </div>
+
+      <div class="tool panel hud" data-p="agent">
+        <div class="studio">
+          <form id="agentForm" class="grid2" style="grid-template-columns:1fr">
+            <label>Agent name<input name="name" maxlength="40" placeholder="Signal" value="Signal"></label>
+            <label>Persona<textarea name="persona" maxlength="600" rows="6">An android AI agent that reads Robinhood Chain for its holders. Calm, sharp, a little dry. Short sentences. Always points to on-chain facts, never hypes.</textarea></label>
+            <p class="note" style="margin:0">Design your token's AI agent and talk to it. When you like it, we launch it with the fee engine, site and admin panel.</p>
+            <a class="btn sm ghost" href="#contact">Launch it with Signal <span class="ar">→</span></a>
+          </form>
+          <div class="chat">
+            <div class="msgs" id="msgs"><div class="m a">Write a persona on the left, then say hi.</div></div>
+            <form class="inrow" id="chatForm" style="margin:0"><input id="chatIn" maxlength="500" placeholder="Talk to your agent…" autocomplete="off"><button class="btn sm" id="chatGo">Send</button></form>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="modal" id="modal" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <button class="x" type="button" id="mClose" aria-label="Close">×</button>
+  <h3 id="mTitle">Holder access</h3>
+  <p id="mText"></p>
+  <button class="btn solid lg" type="button" id="mSign" hidden>Connect wallet &amp; sign</button>
+  <p class="merr" id="mErr"></p>
+  <details id="mOwner"><summary>Owner? Use your studio key</summary><form id="ownerForm"><input id="ownerKey" type="password" placeholder="Studio key" autocomplete="current-password"><button class="btn solid" type="submit">Unlock</button></form></details>
+</div></div>
+
+<script src="/vendor/gsap.min.js"></script>
+<script src="/vendor/ScrollTrigger.min.js"></script>
+<script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.min.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
+<script type="module">
+// holder pass: sent with every request to this site (the server decides what it unlocks)
+(() => {
+  const f = window.fetch.bind(window);
+  window.fetch = (input, init = {}) => {
+    const url = typeof input === "string" ? input : input.url, same = url.startsWith("/") || url.startsWith(location.origin);
+    let pass = null; try { pass = localStorage.getItem("signal.pass"); } catch {}
+    if (same && pass) { const h = new Headers(init.headers || (typeof input !== "string" ? input.headers : undefined)); h.set("x-signal-pass", pass); init = { ...init, headers: h }; }
+    return f(input, init);
+  };
+})();
+// ---------- shared page behaviour (every design) ----------
+const g = (id) => document.getElementById(id), nf = (n) => Number(n).toLocaleString("en-US");
+const hesc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const setText = (id, v) => { const el = g(id); if (el) el.textContent = v; };
+
+// split headlines into masked lines; reveal everything once, staggered per section
+document.querySelectorAll("[data-split]").forEach((el) => { el.innerHTML = el.innerHTML.split(/<br\s*\/?>/i).map((l) => `<span class="ln"><span>${l}</span></span>`).join(""); });
+document.querySelectorAll("main section").forEach((sec) => sec.querySelectorAll(".rv,[data-split]").forEach((el, i) => el.style.setProperty("--d", Math.min(i, 9) * 80 + "ms")));
+const rio = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); rio.unobserve(e.target); } }), { threshold: 0.12 });
+document.querySelectorAll(".rv,[data-split]").forEach((el) => (RM ? el.classList.add("in") : rio.observe(el)));
+
+// manifesto: words light up with scroll
+const mani = g("mani"), KEY = /^(noise|traps|on-chain|plain|words|never|watches)/i;
+let words = [];
+if (mani) {
+  mani.innerHTML = mani.textContent.trim().split(/(\s+)/).map((w) => (/\s/.test(w) ? w : `<span class="w${KEY.test(w.replace(/[.,—]/g, "")) ? " k" : ""}">${hesc(w)}</span>`)).join("");
+  words = [...mani.querySelectorAll(".w")];
+}
+const maniSec = g("manifesto");
+function maniScroll() {
+  if (!maniSec || !words.length) return;
+  const r = maniSec.getBoundingClientRect(), span = r.height - innerHeight;
+  const p = Math.max(0, Math.min(1, -r.top / (span || 1)));
+  const n = RM ? words.length : Math.round(p * 1.2 * words.length);
+  words.forEach((w, i) => w.classList.toggle("on", i < n));
+}
+
+// page scroll: progress, header state, velocity (some designs feed it to the 3D object)
+let lastY = scrollY, velocity = 0;
+function pageScroll() {
+  const max = document.documentElement.scrollHeight - innerHeight;
+  document.documentElement.style.setProperty("--sp", max > 0 ? (scrollY / max).toFixed(4) : 0);
+  document.body.classList.toggle("scrolled", scrollY > 40);
+  velocity = Math.min(1, Math.abs(scrollY - lastY) / 60); lastY = scrollY;
+  maniScroll();
+  window.onDesignScroll?.();
+}
+addEventListener("scroll", pageScroll, { passive: true });
+
+// live numbers
+async function status() {
+  try {
+    const j = await (await fetch("/api/status")).json();
+    for (const id of ["nLaunch", "nLaunch2"]) setText(id, nf(j.index.recent));
+    for (const id of ["nPicks", "nPicks2"]) setText(id, j.picks);
+    if (j.index.indexedTo) for (const id of ["nBlock", "nBlock2"]) setText(id, "#" + nf(j.index.indexedTo));
+    setText("hdrStat", j.index.ready ? "Online" : "Syncing");
+  } catch { setText("hdrStat", "Offline"); }
+}
+status(); setInterval(() => !document.hidden && status(), 6000);
+async function ticker() {
+  try {
+    const j = await (await fetch("/api/radar")).json(), rows = j.rows || [];
+    if (!rows.length) return;
+    setText("nPass", Math.round((rows.filter((r) => r.pass).length / rows.length) * 100) + "%");
+    // radar pictures: every blip is a real launch (angle from its address, distance from its age)
+    document.querySelectorAll("[data-blips]").forEach((box) => {
+      box.innerHTML = rows.slice(0, 14).map((r) => {
+        const ang = (parseInt(r.token.slice(2, 8), 16) % 360) * Math.PI / 180, rad = 8 + Math.min(1, r.ageSec / 3600) * 34;
+        return `<i class="blip${r.pass ? "" : " bad"}" style="left:${50 + Math.cos(ang) * rad * 0.66}%;top:${50 + Math.sin(ang) * rad}%;animation-delay:${((ang / (2 * Math.PI)) * 3.2).toFixed(2)}s" title="$${hesc(r.symbol)}"></i>`;
+      }).join("");
+    });
+    const tk = g("tick"); if (!tk) return;
+    const items = rows.slice(0, 18).map((r) => {
+      const age = r.ageSec < 3600 ? Math.max(1, Math.round(r.ageSec / 60)) + "m" : Math.round(r.ageSec / 3600) + "h";
+      return `<span><b>$${hesc(r.symbol)}</b> ${age} · tax ${r.taxPct}% · curve ${r.progressPct.toFixed(1)}% · ${r.pass ? "<i>passed</i>" : `<em>${hesc(r.checks.find((c) => !c.ok)?.text || "flagged")}</em>`}</span>`;
+    }).join("");
+    tk.innerHTML = items + items;
+  } catch {}
+}
+ticker(); setInterval(() => !document.hidden && ticker(), 15000);
+
+// command bar: a CA scans, a word opens a tool
+const WORDS = [[/scan|check|rug|report/, "scan"], [/radar|new|launches|feed/, "radar"], [/snip|buy|bot|pick/, "snipe"], [/fee|claim|seed/, "fees"], [/kit|lore|tagline|bio|post/, "kit"], [/agent|chat|persona/, "agent"], [/launch|create|deploy|token/, "launch"]];
+g("cmd")?.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const v = g("cmdIn").value.trim(), low = v.toLowerCase(), tab = (t) => document.querySelector(`#tabs [data-t="${t}"]`)?.click();
+  if (/^0x[0-9a-f]{40}$/i.test(v)) { tab("scan"); g("app").scrollIntoView({ behavior: "smooth" }); g("scanCa").value = v; g("scanForm").requestSubmit(); return; }
+  const hit = WORDS.find(([re]) => re.test(low));
+  if (hit) { tab(hit[1]); g("app").scrollIntoView({ behavior: "smooth" }); }
+  else { g("cmdIn").value = ""; g("cmdIn").placeholder = "Try a 0x… address, or: radar, snipe, claim"; }
+});
+addEventListener("keydown", (e) => { if (e.key === "/" && g("cmdIn") && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { e.preventDefault(); g("cmdIn").focus(); } });
+
+// workspace title follows the open tool
+const wsT = () => { const b = document.querySelector("#tabs button.on"); if (b && g("wsTitle")) g("wsTitle").textContent = b.querySelector(".tn")?.textContent || b.textContent; };
+new MutationObserver(wsT).observe(g("tabs"), { attributes: true, subtree: true, attributeFilter: ["class"] });
+// ---------- Signal · Signal ----------
+const REDUCE = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const el = (id) => document.getElementById(id);
+const GLYPH = document.querySelector(".brand .glyph").outerHTML;
+const CA_RE = /^0x[0-9a-fA-F]{40}$/;
+const shortCa = (a) => a.slice(0, 6) + "…" + a.slice(-4);
+const ageOf = (s) => (s < 60 ? Math.max(1, Math.round(s)) + "s" : s < 3600 ? Math.round(s / 60) + "m" : Math.round(s / 3600) + "h");
+const trim2 = (t) => String(t).replace(/(\d+\.\d{2})\d+/g, "$1");
+const TOOLS = ["scan", "radar", "snipe", "fees", "launch", "kit", "agent"];
+
+// ---------- conversation ----------
+const thread = el("thread"), input = el("askIn"), send = el("send"), chatLog = [];
+const grow = () => { input.style.height = "auto"; input.style.height = Math.min(160, input.scrollHeight) + "px"; send.disabled = !input.value.trim(); };
+input.addEventListener("input", grow);
+input.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); el("ask").requestSubmit(); } });
+const scrollThread = () => thread.scrollTo({ top: thread.scrollHeight, behavior: REDUCE ? "auto" : "smooth" });
+function addUser(text) { thread.insertAdjacentHTML("beforeend", `<div class="msg u"><div class="t">${hesc(text)}</div></div>`); }
+function addAgent() { thread.insertAdjacentHTML("beforeend", `<div class="msg a"><span class="av">${GLYPH}</span><div class="t"><span class="typing"><i></i><i></i><i></i></span></div></div>`); scrollThread(); return thread.lastElementChild; }
+const actBtn = (a) => a.unlock ? `<button class="btn solid" type="button" data-unlock>${hesc(a.label)}</button>` : a.scan ? `<a class="btn line" href="#app" data-scan="${hesc(a.scan)}">${hesc(a.label)}</a>`
+  : a.snipe ? `<a class="btn line" href="#app" data-open="snipe" data-snipe-ca="${hesc(a.snipe)}">${hesc(a.label)}</a>`
+  : `<a class="btn line" href="#app" data-open="${hesc(a.tool)}">${hesc(a.label)}</a>`;
+function fill(m, text, actions = [], extra = "") {
+  m.querySelector(".t").textContent = text;
+  if (extra) m.insertAdjacentHTML("beforeend", extra);
+  if (actions.length) m.insertAdjacentHTML("beforeend", `<div class="acts">${actions.map(actBtn).join("")}</div>`);
+  scrollThread();
+}
+async function scanFlow(ca) {
+  addUser(ca); const m = addAgent();
+  try {
+    const r = await fetch("/api/scan?ca=" + ca), j = await r.json();
+    if (r.status === 402) { fill(m, j.error, [{ unlock: true, label: "Unlock as a holder" }]); refreshMe(); return; }
+    if (!r.ok) throw new Error(j.error || "Scan failed.");
+    const t = j.facts?.token || {}, order = ["high", "watch", "ok", "info"], flags = (j.flags || []).slice().sort((a, b) => order.indexOf(a.level) - order.indexOf(b.level)).slice(0, 4);
+    const logo = String(t.logo || "").replace(/^ipfs:\/\//, "https://gateway.pinata.cloud/ipfs/");
+    const card = `<div class="rep"><div class="hd">${/^https:\/\//.test(logo) ? `<img src="${hesc(logo)}" alt="" onerror="this.remove()">` : ""}<div><b>${hesc(t.name || "Token")} · $${hesc(t.symbol || "?")}</b><br><span>${shortCa(ca)}</span></div>${j.risk ? `<span class="rk ${j.risk.level}">risk ${j.risk.score}</span>` : ""}</div>
+      <ul>${flags.map((f) => `<li class="${hesc(f.level)}"><i></i><span><b>${hesc(f.title)}</b> · ${hesc(f.detail)}</span></li>`).join("")}</ul></div>`;
+    const text = j.summary || (flags[0] ? `${flags[0].title}.` : "Here is what the chain shows.");
+    fill(m, text, [{ scan: ca, label: "Full report" }, { snipe: ca, label: "Snipe it" }], card); refreshMe();
+    chatLog.push({ role: "user", content: "Scan " + ca }, { role: "assistant", content: `${t.symbol}: ${text}` });
+  } catch (e) { fill(m, e.message || "Signal could not read that token."); }
+}
+async function chatFlow(text) {
+  addUser(text); chatLog.push({ role: "user", content: text }); const m = addAgent();
+  try {
+    const r = await fetch("/api/chat", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: chatLog }) }), j = await r.json();
+    if (r.status === 402) { fill(m, j.error, [{ unlock: true, label: "Unlock as a holder" }]); chatLog.pop(); refreshMe(); return; }
+    if (!r.ok) throw new Error(j.error || "Signal could not answer.");
+    fill(m, j.reply, j.actions || []); chatLog.push({ role: "assistant", content: j.reply }); refreshMe();
+  } catch (e) { fill(m, e.message); chatLog.pop(); }
+}
+el("ask").addEventListener("submit", (e) => { e.preventDefault(); const v = input.value.trim(); if (!v) return; input.value = ""; grow(); CA_RE.test(v) ? scanFlow(v) : chatFlow(v); });
+document.querySelectorAll("[data-ask]").forEach((c) => c.addEventListener("click", () => { input.value = c.dataset.ask; grow(); el("ask").requestSubmit(); }));
+document.addEventListener("click", (e) => { const a = e.target.closest("[data-snipe-ca]"); if (a) setTimeout(() => { const mb = el("mbToken"); if (mb) mb.value = a.dataset.snipeCa; }, 50); });
+function toChat(fn) { scrollTo({ top: 0, behavior: REDUCE ? "auto" : "smooth" }); setTimeout(fn, REDUCE ? 0 : 450); }
+
+// ---------- tools open in a drawer ----------
+const drawer = el("drawer");
+function showDrawer() { if (!drawer.hidden) return; drawer.hidden = false; document.body.classList.add("drawer-open"); }
+function closeDrawer() { if (drawer.hidden) return; drawer.hidden = true; document.body.classList.remove("drawer-open"); }
+document.addEventListener("click", (e) => { if (e.target.closest('[data-open],[data-scan],a[href="#app"]') && !e.target.closest(".drawer")) showDrawer(); }, true);
+el("dClose").addEventListener("click", closeDrawer);
+drawer.addEventListener("click", (e) => { if (e.target === drawer) closeDrawer(); });
+new MutationObserver(() => { const b = document.querySelector("#tabs button.on"); if (b) el("dTitle").textContent = b.querySelector(".tn")?.textContent || "Tools"; }).observe(el("tabs"), { attributes: true, subtree: true, attributeFilter: ["class"] });
+if (TOOLS.includes(location.hash.slice(1)) || new URLSearchParams(location.search).get("ca")) showDrawer();
+el("home").addEventListener("click", (e) => { e.preventDefault(); closeDrawer(); toChat(() => input.focus()); });
+
+// ---------- holder access ----------
+const LOCK_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V7a3 3 0 0 0-6 0z"/></svg>';
+let me = { holder: false, launched: false, trialsLeft: 3 };
+const store = { set: (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} } };
+document.querySelectorAll(".ws .tool[data-p]").forEach((t) => {
+  if (t.dataset.p === "launch") return;
+  const name = document.querySelector(`#tabs [data-t="${t.dataset.p}"] .tn`)?.textContent || "This tool";
+  t.insertAdjacentHTML("afterbegin", `<div class="lock"><div>${LOCK_SVG}<b>${hesc(name)} is for token holders</b><p>Hold at least 0.1% of the token and unlock it with your wallet. The Pons Launchpad stays free for everyone.</p><button class="btn" type="button" data-unlock>Unlock</button></div></div>`);
+});
+async function refreshMe() {
+  try { me = await (await fetch("/api/me")).json(); } catch {}
+  document.body.classList.toggle("holder", !!me.holder);
+  const hb = el("holderBtn");
+  hb.textContent = me.holder ? (me.owner ? "Owner access" : "Holder · " + shortCa(me.address || "0x0000000000")) : "Holder access";
+  hb.classList.toggle("on", !!me.holder);
+  el("hint").textContent = me.holder ? "Full access. Ask Signal anything." : `${me.trialsLeft} free read${me.trialsLeft === 1 ? "" : "s"} left today. Hold the token for the full receiver.`;
+}
+const modal = el("modal");
+function openModal() {
+  el("mErr").textContent = "";
+  el("mText").textContent = me.launched
+    ? "Hold at least 0.1% of the token supply. Connect the wallet that holds it and sign a short message. Signing is free and sends nothing."
+    : "Holder access opens when the token launches. The Pons Launchpad is free for everyone, today.";
+  el("mSign").hidden = !me.launched || !window.ethereum;
+  if (me.launched && !window.ethereum) el("mErr").textContent = "No browser wallet found. Open this page in MetaMask, Rabby or another wallet browser.";
+  if (me.holder) { el("mText").textContent = "You're unlocked. Every tool is open in this browser for 24 hours."; el("mSign").hidden = true; }
+  modal.hidden = false;
+}
+const closeModal = () => (modal.hidden = true);
+el("holderBtn").addEventListener("click", openModal);
+el("mClose").addEventListener("click", closeModal);
+modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+addEventListener("keydown", (e) => { if (e.key === "Escape") { modal.hidden ? closeDrawer() : closeModal(); } });
+document.addEventListener("click", (e) => { if (e.target.closest("[data-unlock]")) { e.preventDefault(); openModal(); } });
+async function unlockWith(body) {
+  const r = await fetch("/api/auth", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }), j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || "Could not unlock.");
+  store.set("signal.pass", j.pass); await refreshMe(); openModal();
+}
+el("mSign").addEventListener("click", async () => {
+  el("mErr").textContent = "";
+  try {
+    const [address] = await window.ethereum.request({ method: "eth_requestAccounts" });
+    const message = `Unlock Signal Agent\nWallet: ${address}\nIssued: ${Date.now()}`;
+    const signature = await window.ethereum.request({ method: "personal_sign", params: [message, address] });
+    await unlockWith({ address, message, signature });
+  } catch (e) { el("mErr").textContent = e.message || "Signing was cancelled."; }
+});
+el("ownerForm").addEventListener("submit", async (e) => { e.preventDefault(); el("mErr").textContent = ""; try { await unlockWith({ ownerKey: el("ownerKey").value.trim() }); el("ownerKey").value = ""; } catch (er) { el("mErr").textContent = er.message; } });
+refreshMe().then(() => { if (!me.holder && !TOOLS.includes(location.hash.slice(1))) document.querySelector('#tabs [data-t="launch"]')?.click(); });
+
+// buy buttons and the contract address once the token is set on the server
+function buyButtons(tries = 0) { fetch("/api/status").then((r) => r.json()).then((j) => {
+  if (!j.novaToken) return;
+  // the ticker comes from the chain; the server reads it in the background the first time
+  if (!j.tokenSymbol) { if (tries < 20) setTimeout(() => buyButtons(tries + 1), 2500); return; }
+  const sym = "$" + j.tokenSymbol;
+  if (el("tkSym")) el("tkSym").textContent = sym;
+  for (const id of ["buyNova", "buy2"]) { const b = el(id); b.textContent = "Buy " + sym; b.removeAttribute("aria-disabled"); b.href = "https://ponsfamily.com/launchpad/" + j.novaToken; b.target = "_blank"; b.rel = "noopener"; }
+  const c = el("caCopy"); c.textContent = shortCa(j.novaToken); c.title = "Copy " + j.novaToken;
+  if (!c.dataset.on) c.dataset.on = 1, c.addEventListener("click", async () => { try { await navigator.clipboard.writeText(j.novaToken); c.textContent = "Copied"; setTimeout(() => (c.textContent = shortCa(j.novaToken)), 1400); } catch {} });
+}).catch(() => {}); }
+buyButtons();
+
+// ---------- the live band: every launch as a line, signal bright, noise faint ----------
+function wave(r) {
+  // a deterministic shape per token: noise is jagged and flat, signal is a clean rising pulse
+  let h = parseInt(r.token.slice(2, 10), 16); const rnd = () => ((h = (h * 1103515245 + 12345) >>> 0) / 4294967296);
+  const W = 200, pts = [];
+  for (let i = 0; i <= 40; i++) {
+    const x = (i / 40) * W, u = i / 40;
+    const y = r.pass ? 14 - Math.sin(u * Math.PI * 3) * Math.exp(-Math.pow((u - 0.6) * 3.2, 2)) * 11 : 14 + (rnd() - 0.5) * (r.devRugged ? 9 : 4);
+    pts.push(`${i ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`);
+  }
+  return `<svg viewBox="0 0 200 28" preserveAspectRatio="none" aria-hidden="true"><path d="${pts.join("")}"/></svg>`;
+}
+const rowsEl = el("rows"), shown = new Set();
+function paintBand(rows) {
+  const fresh = new Set(rows.filter((r) => !shown.has(r.token)).map((r) => r.token));
+  const first = !shown.size;
+  rowsEl.innerHTML = rows.slice(0, 14).map((r) => {
+    const bad = r.checks.filter((c) => !c.ok), why = r.pass ? (r.checks.find((c) => /grow/.test(c.text))?.text || "every check passed") : bad[0]?.text || "";
+    const cls = r.pass ? "sig" : r.devRugged ? "int" : "";
+    return `<button class="row ${cls}${!first && fresh.has(r.token) ? " fresh" : ""}" type="button" data-row="${r.token}"><span class="sym">$${hesc(r.symbol)}</span><span class="age">${ageOf(r.ageSec)}</span>${wave(r)}<span class="why">${hesc(trim2(why))}</span><span class="st">${r.pass ? "Signal" : r.devRugged ? "Interference" : "Noise"}</span></button>`;
+  }).join("");
+  rows.forEach((r) => shown.add(r.token));
+  const sig = rows.filter((r) => r.pass).length;
+  el("tRx").textContent = rows.length; el("tSig").textContent = sig; el("tNoise").textContent = rows.length - sig;
+}
+rowsEl.addEventListener("click", (e) => { const r = e.target.closest("[data-row]"); if (r) toChat(() => scanFlow(r.dataset.row)); });
+async function pull() {
+  try { const j = await (await fetch("/api/radar")).json(); const rows = j.rows || []; paintBand(rows); window.field?.set(rows); } catch {}
+}
+pull(); setInterval(() => !document.hidden && pull(), 12000);
+
+el("askCell").addEventListener("click", (e) => { e.preventDefault(); toChat(() => input.focus()); });
+
+// ---------- light concept: the tape and the scope counters ----------
+const _paintBand = paintBand;
+paintBand = function (rows) {
+  _paintBand(rows);
+  const sig = rows.filter((r) => r.pass).length; el("scSig").textContent = sig; el("scNoise").textContent = rows.length - sig;
+  const top = rows.find((r) => r.pass), cap = document.querySelector(".sc.bl");
+  cap.innerHTML = top ? `Signal · <b>$${hesc(top.symbol)}</b> · ${ageOf(top.ageSec)}` : "One line per launch";
+  cap.classList.toggle("hot", !!top);
+  const items = rows.slice(0, 16).map((r) => `<span><b>$${hesc(r.symbol)}</b> ${ageOf(r.ageSec)}${r.pass ? "<em>SIGNAL</em>" : r.devRugged ? "<i>INTERFERENCE</i>" : ""}</span>`).join("");
+  if (items) el("tape").innerHTML = items + items;
+};
+
+// ---------- Atlas: the map of Pons ----------
+import * as THREE from "three";
+{
+  const cv = document.getElementById("atlas"), box = document.getElementById("labels");
+  const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
+  renderer.setPixelRatio(Math.min(2, devicePixelRatio)); renderer.setClearColor(0xf5f3ec);
+  const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(34, 1, 0.01, 100);
+  const globe = new THREE.Group(); scene.add(globe);
+  const R = 2.25, INK = 0x161514;
+  const dotC = document.createElement("canvas"); dotC.width = dotC.height = 64; { const x = dotC.getContext("2d"); x.fillStyle = "#fff"; x.beginPath(); x.arc(32, 32, 30, 0, Math.PI * 2); x.fill(); }
+  const DOT = new THREE.CanvasTexture(dotC);
+  // dust: every other launch of the day, a faint point on the sphere
+  const N = 2600, p = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) { const y = 1 - (i / (N - 1)) * 2, r = Math.sqrt(1 - y * y), a = i * 2.399963; p.set([Math.cos(a) * r * R, y * R, Math.sin(a) * r * R], i * 3); }
+  const dg = new THREE.BufferGeometry(); dg.setAttribute("position", new THREE.BufferAttribute(p, 3));
+  const dust = new THREE.PointsMaterial({ color: INK, size: 0.03, map: DOT, alphaTest: 0.3, transparent: true, opacity: 0.5, depthWrite: false });
+  globe.add(new THREE.Points(dg, dust));
+  // meridians and the equator, like an atlas
+  const lm = new THREE.LineBasicMaterial({ color: INK, transparent: true, opacity: 0.12 }), eq = new THREE.LineBasicMaterial({ color: INK, transparent: true, opacity: 0.3 });
+  const ring = (rot) => new THREE.BufferGeometry().setFromPoints(new THREE.EllipseCurve(0, 0, R, R).getPoints(160).map((q) => (rot ? new THREE.Vector3(q.x, 0, q.y) : new THREE.Vector3(q.x, q.y, 0))));
+  for (let k = 0; k < 6; k++) { const l = new THREE.Line(ring(false), lm); l.rotation.y = (k / 6) * Math.PI; globe.add(l); }
+  globe.add(new THREE.Line(ring(true), eq));
+  // the deep field: what you fly through once you zoom into the map
+  const M = 2400, q = new Float32Array(M * 3);
+  for (let i = 0; i < M; i++) { const u = Math.random() * 2 - 1, a = Math.random() * Math.PI * 2, r = Math.cbrt(Math.random()) * R * 0.97, s = Math.sqrt(1 - u * u); q.set([Math.cos(a) * s * r, u * r, Math.sin(a) * s * r], i * 3); }
+  const qg = new THREE.BufferGeometry(); qg.setAttribute("position", new THREE.BufferAttribute(q, 3));
+  const deep = new THREE.PointsMaterial({ color: INK, size: 0.016, map: DOT, alphaTest: 0.3, transparent: true, opacity: 0, depthWrite: false });
+  globe.add(new THREE.Points(qg, deep));
+  // the measuring ring: sweeps the globe in step 02
+  const scan = new THREE.Mesh(new THREE.TorusGeometry(1, 0.006, 8, 200), new THREE.MeshBasicMaterial({ color: INK, transparent: true, opacity: 0 }));
+  scan.rotation.x = Math.PI / 2; scene.add(scan);
+
+  // stars: the newest launches, placed by their address; signal ones are bright and named
+  const stars = []; let key = "";
+  function place(rows) {
+    const list = rows.length >= 8 ? rows.slice(0, 22) : [...rows, ...DEMO_STARS.slice(0, 14 - rows.length)];
+    const k = list.map((r) => r.token + r.pass).join();
+    if (k === key) return; key = k;
+    stars.forEach((s) => { globe.remove(s.m); s.el.remove(); }); stars.length = 0;
+    list.forEach((r, i) => {
+      const h = parseInt(r.token.slice(2, 10), 16) || i * 7919, u = (h % 1000) / 1000, v = ((h >>> 10) % 1000) / 1000;
+      const th = u * Math.PI * 2, ph = Math.acos(2 * v - 1) * 0.8 + 0.3, pos = new THREE.Vector3(Math.sin(ph) * Math.cos(th), Math.cos(ph), Math.sin(ph) * Math.sin(th)).multiplyScalar(R * 1.01);
+      const m = new THREE.Mesh(new THREE.SphereGeometry(r.pass ? 0.075 : 0.035, 16, 16), new THREE.MeshBasicMaterial({ color: r.pass ? INK : 0x8a857b }));
+      m.position.copy(pos); globe.add(m);
+      const el = document.createElement("div"); el.className = "lb " + (r.pass ? "sig" : "no"); el.textContent = (r.pass ? "$" : "") + r.symbol + (r.pass ? "  · signal" : "");
+      const why = r.checks?.find((c) => /grow/.test(c.text))?.text || "every check passed"; el.dataset.why = trim2(why);
+      box.appendChild(el); stars.push({ m, el, r, born: -9 });
+    });
+  }
+  const DEMO_STARS = ["MBULL", "KABU", "PUPKINU", "FREE", "LOBSTERC", "GLWA", "AVON", "WORM", "ZETA", "NOAN", "CAPY", "HUSH", "TRACER", "ORBIX"].map((s, i) => ({ symbol: s, token: "0x" + ((i + 7) * 2654435761 >>> 0).toString(16).padStart(8, "0"), pass: i % 5 === 1, checks: [] }));
+  place([]);
+  window.field = { set: place };
+
+  // drag to turn the map (hero and token only, never over the controls)
+  let drag = null, dragV = 0;
+  addEventListener("pointerdown", (e) => { if (!/hero|token/.test(mode) || e.target.closest("a,button,textarea,input,.convo,.nav,.tc,.drawer,.modal")) return; drag = e.clientX; });
+  addEventListener("pointermove", (e) => { if (drag == null) return; dragV = (e.clientX - drag) * 0.005; drag = e.clientX; globe.rotation.y += dragV; }, { passive: true });
+  addEventListener("pointerup", () => (drag = null));
+
+  const mob = () => innerWidth < 1000;
+  function size() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }
+  addEventListener("resize", size); size();
+
+  // ---------- scroll: zoom into the map, back out to measure, name one star, end where it began ----------
+  let mode = "hero", hp = 0, stepN = 0, stepP = 0, focus = null;
+  const S = { gx: 3.1, gy: 0, z: 10, cy: 1.1, spin: 0.0016, labels: 1, lines: 1, deep: 0, dust: 0.5, scan: 0 };
+  const cur = { ...S };
+  const ease = (x) => 1 - Math.pow(1 - x, 3), sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  function targets() {
+    const m = mob(), step = Math.max(0, stepN);
+    if (mode === "hero") {
+      const a = ease(Math.min(1, hp / 0.55)), b = Math.pow(Math.max(0, (hp - 0.5) / 0.5), 1.6);
+      Object.assign(S, { gx: (m ? 0 : 3.1) * (1 - a), gy: (m ? 1.25 : 0) * (1 - a), z: hp < 0.5 ? 10 - 5.4 * a : 4.6 - 4.25 * b, cy: 1.1 * (1 - a), spin: 0.0016 + hp * 0.006,
+        labels: 1 - sstep(0.3, 0.55, hp), lines: 1 - sstep(0.55, 0.85, hp), deep: sstep(0.45, 0.9, hp) * 0.55, dust: 0.5 - sstep(0.6, 0.95, hp) * 0.3, scan: 0 });
+    } else if (mode === "band") Object.assign(S, { gx: 0, gy: 0, z: 0.35, cy: 0, spin: 0.004, labels: 0, lines: 0, deep: 0.55, dust: 0.2, scan: 0 });
+    else if (mode === "how") Object.assign(S, { gx: m ? 0 : [2.3, 2.3, 1.7][step], gy: m ? 2.4 : 0, z: m ? [13, 12, 10][step] : [12, 9, 7][step], cy: [1.6, 0.9, 0.5][step], spin: [0.014, 0.003, 0][step], labels: 1, lines: 1, deep: 0, dust: [0.55, 0.3, 0.35][step], scan: step === 1 ? 0.55 : 0 });
+    else if (mode === "token") Object.assign(S, { gx: m ? 0 : 3.1, gy: m ? 1.4 : 0, z: 10.5, cy: 1.1, spin: 0.0018, labels: 1, lines: 1, deep: 0, dust: 0.5, scan: 0 });
+  }
+  const v = new THREE.Vector3(), n = new THREE.Vector3(), toCam = new THREE.Vector3(), clock = new THREE.Clock();
+  renderer.setAnimationLoop(() => {
+    const t = clock.getElapsedTime(); targets();
+    for (const k in S) cur[k] += (S[k] - cur[k]) * (k === "z" && mode === "hero" ? 0.2 : 0.07);
+    globe.position.set(cur.gx, cur.gy, 0);
+    cam.position.set(0, cur.cy, cur.z); cam.lookAt(0, cur.cy * 0.3 + cur.gy * 0.4, cur.z - 10);
+    if (mode === "how" && stepN === 2 && focus) {
+      // turn the globe so the named star faces us
+      const lp = focus.m.position, want = Math.atan2(-cur.gx, cur.z) - Math.atan2(lp.x, lp.z);
+      let d = ((want - globe.rotation.y) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI; globe.rotation.y += d * 0.06;
+      globe.rotation.x += ((Math.asin(Math.max(-1, Math.min(1, lp.y / R))) * 0.6) - globe.rotation.x) * 0.05;
+    } else { if (drag == null) { globe.rotation.y += cur.spin + dragV; dragV *= 0.94; } globe.rotation.x += (0 - globe.rotation.x) * 0.05; }
+    lm.opacity = 0.12 * cur.lines; eq.opacity = 0.3 * cur.lines; deep.opacity = cur.deep; dust.opacity = cur.dust;
+    // the ring sweeps up and down the globe
+    const la = Math.sin(t * 1.1) * 1.15; scan.position.set(cur.gx, cur.gy + Math.sin(la) * R, 0); scan.scale.setScalar(Math.cos(la) * R * 1.03 + 0.001); scan.material.opacity = cur.scan;
+    stars.forEach((s, i) => {
+      const k = Math.min(1, Math.max(0, (t - s.born) / 0.7)), pop = s.born < 0 ? 1 : 1 + 2.70158 * Math.pow(k - 1, 3) + 1.70158 * Math.pow(k - 1, 2);
+      s.m.scale.setScalar(Math.max(0.001, pop * (s === focus && stepN === 2 && mode === "how" ? 1.6 : 1)));
+      s.m.getWorldPosition(v); n.copy(v).sub(globe.position).normalize(); toCam.copy(cam.position).sub(v).normalize();
+      const front = n.dot(toCam) > 0.05 && cur.z > R + 0.3, measured = mode === "how" && stepN === 1 ? (Math.abs(v.y - scan.position.y) < 0.35 ? 1 : 0.35) : 1;
+      // keep the label clear of the dot: its on-screen radius grows as the camera closes in
+      const px = (s.m.geometry.parameters.radius * s.m.scale.x) / cam.position.distanceTo(v) / Math.tan((cam.fov * Math.PI) / 360) * (innerHeight / 2);
+      v.project(cam);
+      s.el.style.transform = `translate(${((v.x * 0.5 + 0.5) * innerWidth + px + (s.r.pass ? 22 : 10)).toFixed(1)}px,${((-v.y * 0.5 + 0.5) * innerHeight).toFixed(1)}px) translateY(-50%)`;
+      const hide = mode === "how" && stepN === 2 && focus && s !== focus && !s.r.pass;
+      s.el.style.opacity = front && !hide ? (s.r.pass ? 1 : 0.5) * cur.labels * measured * Math.min(1, pop) : 0;
+    });
+    renderer.render(scene, cam);
+  });
+
+  // ---------- GSAP: the zoom, the reveals, the pinned steps ----------
+  gsap.registerPlugin(ScrollTrigger);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const split = (h) => (h.innerHTML = h.innerHTML.split(/(<br>|<span>|<\/span>|\s+)/).map((w) => (!w || /^\s+$/.test(w) || /^<\/?(br|span)>$/.test(w) ? w : `<span class="sp"><span>${w}</span></span>`)).join(""));
+  $$(".hero h1, .how h2, .token h2").forEach(split);
+  $$(".how h2, .token h2").forEach((h) => h.classList.remove("rv"));
+  if (!REDUCE) {
+    gsap.from(".hero h1 .sp>span", { yPercent: 110, duration: 1.3, ease: "expo.out", stagger: 0.06, delay: 0.1 });
+    gsap.from([".hero .kick", ".hero .convo", ".fieldcap"], { y: 18, opacity: 0, duration: 1.2, ease: "expo.out", stagger: 0.1, delay: 0.45 });
+    // 1 · zoom into the map: the hero holds still while the camera dives through the globe
+    const tl = gsap.timeline({ scrollTrigger: { trigger: ".hero", start: "top top", end: "+=150%", pin: true, scrub: 0.6, onUpdate: (s) => (hp = s.progress) } });
+    tl.to(".hgrid", { y: -80, opacity: 0, filter: "blur(6px)", ease: "power2.in", duration: 0.35 }, 0)
+      .to([".fieldcap", ".veil"], { opacity: 0, duration: 0.3 }, 0)
+      .fromTo(".dive", { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.2, ease: "power2.out" }, 0.4)
+      .to(".dive", { opacity: 0, scale: 1.25, filter: "blur(8px)", duration: 0.2, ease: "power2.in" }, 0.8)
+      .to({}, { duration: 0 }, 1);
+    // 2 · the newest stars slide up over the field
+    gsap.from(".band .bh", { y: 50, opacity: 0, duration: 1.2, ease: "expo.out", scrollTrigger: { trigger: ".band", start: "top 80%", once: true } });
+    // 3 · tools rise in a stagger, the token headline rises out of its mask
+    gsap.from(".tgrid a", { y: 40, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.06, scrollTrigger: { trigger: ".tgrid", start: "top 82%", once: true } });
+    gsap.from(".token h2 .sp>span", { yPercent: 110, duration: 1.2, ease: "expo.out", stagger: 0.05, scrollTrigger: { trigger: ".token", start: "top 60%", once: true } });
+    gsap.from([".tc .lead", ".tc .cta", ".tc .facts"], { y: 30, opacity: 0, duration: 1.1, ease: "expo.out", stagger: 0.1, scrollTrigger: { trigger: ".token", start: "top 55%", once: true } });
+    gsap.from(".how h2 .sp>span", { yPercent: 110, duration: 1.2, ease: "expo.out", stagger: 0.05, scrollTrigger: { trigger: ".how", start: "top 70%", once: true } });
+  }
+  // 4 · how it works: pinned, the steps drive the globe
+  const hs = $$(".hs");
+  const howST = ScrollTrigger.create({ trigger: ".how", start: "top top", end: REDUCE ? "bottom top" : "+=240%", pin: !REDUCE, scrub: true, onUpdate: (s) => {
+    const i = Math.min(2, Math.floor(s.progress * 3));
+    if (i !== stepN) {
+      stepN = i;
+      if (i === 0) stars.forEach((st, k) => (st.born = clock.getElapsedTime() + k * 0.07));
+      if (i === 2) focus = stars.find((st) => st.r.pass) || stars[0];
+      stars.forEach((st) => st.el.classList.toggle("hot", i === 2 && st === focus));
+    }
+    hs.forEach((el, k) => el.classList.toggle("on", k === i)); document.querySelector(".meter i").style.transform = `scaleX(${s.progress})`;
+  } });
+  // which part of the page drives the map
+  const secs = ["hero", "band", "how", "tools", "token"].map((k) => [k, document.querySelector(`[data-sec="${k}"]`) || document.getElementById(k)]);
+  ScrollTrigger.create({ start: 0, end: "max", onUpdate: () => {
+    const mid = innerHeight * 0.5; let m = "hero";
+    for (const [k, el] of secs) { const r = (el.parentElement.classList.contains("pin-spacer") ? el.parentElement : el).getBoundingClientRect(); if (r.top < mid) m = k; }
+    if (m === "hero" && hp >= 0.999) m = "band";
+    if (m === "tools") m = "how";
+    if (m === "how" && mode !== "how" && !howST.isActive) stepN = -1;
+    mode = m;
+  } });
+  const fresh = () => ScrollTrigger.refresh();
+  addEventListener("load", fresh); document.fonts?.ready.then(fresh); setTimeout(fresh, 1500);
+}
+
+// ---------- tools ----------
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const short = (a) => (a ? a.slice(0, 6) + "…" + a.slice(-4) : "");
+const fmt = (v, d = 2) => Number(v).toLocaleString("en-US", { maximumFractionDigits: d });
+const EXPLORER = "https://robinhoodchain.blockscout.com/";
+const safeUrl = (u) => (/^https:\/\/[^\s"'<>]+$/.test(u || "") ? u : "");
+const img = (u) => { u = String(u || ""); if (u.startsWith("ipfs://")) u = "https://gateway.pinata.cloud/ipfs/" + u.slice(7); return safeUrl(u); };
+const loading = (t) => `<div class="load"><i></i>${esc(t)}</div>`;
+async function api(url, opts) {
+  const r = await fetch(url, opts); let j = {};
+  try { j = await r.json(); } catch {}
+  if (!r.ok) throw new Error(j.error || "Request failed (" + r.status + ").");
+  return j;
+}
+
+// tabs
+const VISOR = { launch: "LAUNCH", scan: "SCANNER", radar: "RADAR", snipe: "SNIPER", fees: "CLAIM", kit: "LAUNCH", agent: "AGENT" };
+let radarTimer = null;
+function openTab(t, scroll, quiet) {
+  document.querySelectorAll("#tabs button").forEach((b) => b.classList.toggle("on", b.dataset.t === t));
+  document.querySelectorAll(".tool").forEach((p) => p.classList.toggle("on", p.dataset.p === t));
+  window.nova?.say(VISOR[t]);
+  clearInterval(radarTimer);
+  if (t === "radar") { loadRadar(); radarTimer = setInterval(loadRadar, 10_000); }
+  if (scroll) $("app").scrollIntoView({ behavior: "smooth", block: "start" });
+  if (!quiet) history.replaceState(null, "", "#" + t);
+}
+$("tabs").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) openTab(b.dataset.t); });
+document.addEventListener("click", (e) => { const a = e.target.closest("[data-open]"); if (a) { e.preventDefault(); openTab(a.dataset.open, true); } });
+
+// scanner
+const STEPS = ["Reading the Pons factory record", "Following every transfer since launch", "Checking the deployer's other launches", "Looking at the first minute of trading", "Signal is writing the summary"];
+async function runScan(ca) {
+  ca = ca.trim(); $("scanCa").value = ca;
+  if (!/^0x[0-9a-fA-F]{40}$/.test(ca)) { $("scanOut").innerHTML = `<p class="err">Paste a token contract address (0x… 42 characters).</p>`; return; }
+  $("scanGo").disabled = true;
+  let i = 0; $("scanOut").innerHTML = loading(STEPS[0]);
+  const t = setInterval(() => { i = Math.min(STEPS.length - 1, i + 1); const l = $("scanOut").querySelector(".load"); if (l) l.innerHTML = "<i></i>" + STEPS[i]; window.nova?.pulse(0.3); }, 1700);
+  try { renderScan(await api("/api/scan?ca=" + ca)); }
+  catch (e) { $("scanOut").innerHTML = `<p class="err">${esc(e.message)}</p>`; }
+  finally { clearInterval(t); $("scanGo").disabled = false; }
+}
+// rug risk, bundled wallets and the X check, above the AI read
+function riskBlock(r) {
+  const k = r.risk; if (!k) return "";
+  const b = r.facts.bundle || {}, x = r.facts.x || {}, nfmt = (n) => Number(n).toLocaleString("en-US");
+  const xs = !x.linked ? `<p class="rnote">No X account is set on-chain.</p>`
+    : x.found === false ? `<p class="rnote bad">The linked account @${esc(x.handle)} does not exist.</p>`
+    : !x.found ? `<p class="rnote">Could not read @${esc(x.handle || "")} right now.</p>`
+    : `<div class="xrow"><a href="https://x.com/${esc(x.handle)}" target="_blank" rel="noopener nofollow">@${esc(x.handle)}</a>${x.verified ? '<span class="xv">verified</span>' : ""}</div>
+       <div class="xnums"><div><b>${nfmt(x.followers)}</b><span>followers</span></div><div><b>${x.ageDays}d</b><span>account age</span></div><div><b>${nfmt(x.posts)}</b><span>posts</span></div>
+       ${x.post ? `<div><b>${nfmt(x.post.likes)}</b><span>likes on post</span></div><div><b>${x.post.views ? nfmt(x.post.views) : "–"}</b><span>views</span></div>` : ""}</div>
+       <p class="rnote ${x.ageDays < 7 || x.followers < 100 || (x.post && x.post.likes > x.followers * 1.5 && x.post.likes > 50) ? "bad" : "good"}">${
+         x.post && x.post.likes > x.followers * 1.5 && x.post.likes > 50 ? "Likes far exceed the followers: engagement may be bought." :
+         x.ageDays < 7 ? "A brand-new account. Treat the hype with care." : x.followers < 100 ? "A small audience so far." : "Reach and age look organic."}</p>`;
+  return `<div class="risk ${k.level}">
+    <div class="rg"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" class="t"/><circle cx="60" cy="60" r="50" class="v" pathLength="100" stroke-dasharray="${k.score} 100" transform="rotate(-90 60 60)"/></svg><div><b>${k.score}%</b><span>rug risk</span></div></div>
+    <div class="rw"><span class="lbl">Rug risk · <b>${k.level}</b></span><ul>${k.reasons.length ? k.reasons.slice(0, 6).map((x) => `<li>${esc(x)}</li>`).join("") : "<li>No red flags in the on-chain data.</li>"}</ul><p class="rnote">A read of on-chain signals, not a guarantee.</p></div>
+  </div>
+  <div class="two">
+    <div><span class="lbl">Bundled wallets · <b>${b.count || 0}</b> · hold ${fmt(b.holdsPct || 0)}%</span>${b.wallets?.length ? `<table>${b.wallets.slice(0, 8).map((w) => `<tr><td><a href="${EXPLORER}address/${w.address}" target="_blank" rel="noopener">${short(w.address)}</a><div class="why">${w.reasons.map(esc).join(" · ")}</div></td><td class="r">${fmt(w.holdsPct)}%<div class="why">bought ${fmt(w.boughtPct)}%</div></td></tr>`).join("")}</table>` : `<p class="rnote good">No wallets look tied to the deployer or to each other.</p>`}</div>
+    <div><span class="lbl">X check</span>${xs}</div>
+  </div>`;
+}
+function renderScan(r) {
+  const f = r.facts, t = f.token, p = f.pons, d = f.deployer, h = f.holders, e = f.early, tr = f.trading;
+  const socials = Object.entries(t.socials || {}).map(([k, v]) => (safeUrl(v) ? `<a class="chipl" href="${esc(v)}" target="_blank" rel="noopener nofollow">${esc(k)}</a>` : "")).join("");
+  const logo = img(t.logo);
+  $("scanOut").innerHTML = `
+  <div class="rh">${logo ? `<img src="${esc(logo)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}
+    <div><h3>${esc(t.name)}<span>$${esc(t.symbol)}</span></h3><div class="ca">${esc(t.address)} · ${fmt(t.ageHours, 1)}h old</div></div>
+    <div class="links">${socials}<a class="chipl" href="${EXPLORER}token/${esc(t.address)}" target="_blank" rel="noopener">explorer</a><a class="chipl" href="https://ponsfamily.com/launchpad/${esc(t.address)}" target="_blank" rel="noopener">pons</a></div></div>
+  ${riskBlock(r)}
+  <span class="lbl">Signal's read</span>
+  <p class="read">${r.summary ? esc(r.summary) : `<span style="color:var(--dim);font-weight:500">${esc(r.summaryError || "")}</span>`}</p>
+  <div class="flags">${r.flags.map((x) => `<div class="fl"><span class="lv ${esc(x.level)}">${esc(x.level)}</span><div><b>${esc(x.title)}</b><span class="d">${esc(x.detail)}</span></div></div>`).join("")}</div>
+  <div class="nums">
+    <div><span class="lbl">Holders</span><b>${h.count}</b><small>top 10 hold ${fmt(h.top10Pct)}%</small></div>
+    <div><span class="lbl">Deployer</span><b>${fmt(d.holdsPct)}%</b><small>bought ${fmt(d.boughtPct)}% · out ${fmt(d.soldPct)}%</small></div>
+    <div><span class="lbl">First minute</span><b>${e.wallets}</b><small>wallets took ${fmt(e.boughtPct)}%, hold ${fmt(e.stillHoldPct)}%</small></div>
+    <div><span class="lbl">Trades</span><b>${tr.buys} / ${tr.sells}</b><small>buys / sells</small></div>
+    <div><span class="lbl">Volume in</span><b>${fmt(tr.volumeInETH, 3)}</b><small>ETH bought · ${fmt(tr.volumeOutETH, 3)} sold</small></div>
+    <div><span class="lbl">Last hour</span><b>${tr.lastHour.buys} / ${tr.lastHour.sells}</b><small>${fmt(tr.lastHour.inETH, 3)} in · ${fmt(tr.lastHour.outETH, 3)} out ETH</small></div>
+    <div><span class="lbl">Creator tax</span><b>${fmt(p.creatorTaxPct)}%</b><small>${p.snipeTaxNowPct ? "snipe tax now " + fmt(p.snipeTaxNowPct) + "%" : "no snipe tax now"}</small></div>
+    <div><span class="lbl">Graduation</span><b>${p.graduated ? "Done" : fmt(p.progressPct, 1) + "%"}</b><div class="pbar"><i style="width:${p.graduated ? 100 : Math.min(100, p.progressPct)}%"></i></div><small>${fmt(p.curveETH, 3)} / ${fmt(p.graduationETH)} ETH</small></div>
+  </div>
+  <div class="two">
+    <div><span class="lbl">Top holders</span>${h.top.length ? `<table>${h.top.map((x, i) => `<tr><td style="width:26px;color:var(--dim)">${i + 1}</td><td><a href="${EXPLORER}address/${x.address}" target="_blank" rel="noopener">${short(x.address)}</a>${x.dev ? '<span class="pill">deployer</span>' : ""}${x.contract ? '<span class="pill">contract</span>' : ""}</td><td class="r">${fmt(x.pct)}%</td></tr>`).join("")}</table>` : `<p class="note">No one holds outside the curve.</p>`}</div>
+    <div><span class="lbl">Deployer</span><table>
+      <tr><td>Wallet</td><td class="r"><a href="${EXPLORER}address/${d.address}" target="_blank" rel="noopener">${short(d.address)}</a></td></tr>
+      <tr><td>Fees go to</td><td class="r">${d.feeRecipientIsDeployer ? "the deployer" : short(d.feeRecipient)}</td></tr>
+      <tr><td>Other Pons launches</td><td class="r">${d.otherLaunches}</td></tr>
+      <tr><td>Graduated / look abandoned</td><td class="r">${d.otherLaunchesGraduated} / ${d.otherLaunchesDead}</td></tr>
+      ${d.recent.map((x) => `<tr><td><a href="#" data-scan="${x.token}">$${esc(x.symbol)}</a></td><td class="r">${x.graduated ? "graduated" : fmt(x.curveETH, 3) + " ETH on curve"}</td></tr>`).join("")}
+    </table></div>
+  </div>
+  <p class="note" style="text-align:right">Block ${f.scannedAtBlock}${r.cached ? " · cached" : ""} · ${fmt(r.ms / 1000, 1)}s</p>`;
+}
+$("scanForm").addEventListener("submit", (e) => { e.preventDefault(); runScan($("scanCa").value); });
+document.addEventListener("click", (e) => { const a = e.target.closest("[data-scan]"); if (a) { e.preventDefault(); openTab("scan", true); runScan(a.dataset.scan); } });
+
+// radar
+let radarRows = [];
+async function loadRadar() {
+  try {
+    const j = await api("/api/radar");
+    radarRows = j.rows; $("radarHead").textContent = "block " + j.head.toLocaleString("en-US"); drawRadar();
+  } catch (e) { if (!radarRows.length) $("radarOut").innerHTML = `<p class="err">${esc(e.message)}</p>`; }
+}
+function age(s) { return s < 60 ? s + "s" : s < 3600 ? Math.floor(s / 60) + "m" : Math.floor(s / 3600) + "h"; }
+function drawRadar() {
+  const rows = $("onlyPass").checked ? radarRows.filter((r) => r.pass) : radarRows;
+  $("radarOut").innerHTML = rows.length ? rows.map((r) => {
+    const logo = img(r.logo);
+    return `<div class="rrow">${logo ? `<img src="${esc(logo)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph'}))">` : `<div class="ph"></div>`}
+      <div class="nm"><b>$${esc(r.symbol)}</b><span>${esc(r.name)}</span><div class="pbar"><i style="width:${r.graduated ? 100 : r.progressPct}%"></i></div></div>
+      <span class="age">${age(r.ageSec)} ago${r.snipePct ? `<br>tax ${fmt(r.snipePct)}%` : ""}</span>
+      <div class="checks">${r.checks.map((c) => `<span class="ck${c.ok ? "" : " no"}">${c.ok ? "✓" : "✕"} ${esc(c.text)}</span>`).join("")}</div>
+      <span class="verdict ${r.pass ? "p" : "s"}">${r.pass ? "PASS" : "SKIP"}</span>
+      <div class="ract"><button data-scan="${r.token}">Scan</button><a href="https://ponsfamily.com/launchpad/${r.token}" target="_blank" rel="noopener">Pons</a></div></div>`;
+  }).join("") : `<p class="empty">No launch passes right now. Untick the filter to see everything.</p>`;
+}
+$("onlyPass").addEventListener("change", drawRadar);
+
+// fee claimer (read from the server, claim in the visitor's wallet)
+const CHAIN = { chainId: "0x1237", chainName: "Robinhood Chain", nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 }, rpcUrls: ["https://rpc.mainnet.chain.robinhood.com"], blockExplorerUrls: [EXPLORER] };
+let feeData = null, ethersLib = null;
+const getEthers = async () => (ethersLib ||= await import("/vendor/ethers.min.js"));
+async function connect() {
+  if (!window.ethereum) throw new Error("No wallet found. Install MetaMask or Rabby, or paste your address to just check.");
+  const [acc] = await window.ethereum.request({ method: "eth_requestAccounts" });
+  try { await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN.chainId }] }); }
+  catch (e) { if (e.code === 4902 || /Unrecognized|not been added/i.test(e.message || "")) await window.ethereum.request({ method: "wallet_addEthereumChain", params: [CHAIN] }); else throw e; }
+  return acc;
+}
+async function checkFees(w) {
+  w = w.trim(); $("feeWallet").value = w;
+  if (!/^0x[0-9a-fA-F]{40}$/.test(w)) { $("feeOut").innerHTML = `<p class="err">Paste a wallet address (0x… 42 characters).</p>`; return; }
+  $("feeGo").disabled = true; $("feeOut").innerHTML = loading("Finding every Pons token this wallet launched");
+  try { feeData = await api("/api/fees?wallet=" + w); drawFees(); }
+  catch (e) { $("feeOut").innerHTML = `<p class="err">${esc(e.message)}</p>`; }
+  finally { $("feeGo").disabled = false; }
+}
+function drawFees() {
+  const d = feeData, pend = d.rows.filter((r) => r.pendingETH > 0);
+  $("feeOut").innerHTML = `
+    <div class="total"><div><span class="lbl">Claimable now</span><br><b>${fmt(d.totalETH, 6)} ETH</b></div>
+      <div style="text-align:right"><span class="lbl">${d.launched} token${d.launched === 1 ? "" : "s"} launched · ${pend.length} with fees on the curve · ${fmt(d.escrowETH, 6)} ETH in escrow</span><br>
+      <button class="btn" id="claimAll" style="margin-top:10px" ${d.totalETH > 0 ? "" : "disabled"}>Claim all in my wallet <span class="ar">→</span></button></div></div>
+    ${d.rows.length ? `<table>${d.rows.map((r) => `<tr><td><a href="#" data-scan="${r.token}">$${esc(r.symbol)}</a> <span style="color:var(--dim)">${esc(r.name)}</span></td><td class="r">${r.graduated ? '<span class="pill">graduated</span>' : ""} ${fmt(r.pendingETH, 6)} ETH</td></tr>`).join("")}</table>` : `<p class="note">This wallet has not launched a Pons token, so it has no curves to sweep.</p>`}
+    <div class="steps2" id="claimLog"></div>
+    <p class="note">Claiming sends one transaction per token with fees, then one to the escrow. Gas is paid by your wallet. Only the fee recipient wallet can claim.</p>`;
+  $("claimAll")?.addEventListener("click", claimAll);
+}
+async function claimAll() {
+  const log = (t, c = "") => { $("claimLog").insertAdjacentHTML("beforeend", `<div class="${c}">&gt; ${esc(t)}</div>`); };
+  const btn = $("claimAll"); btn.disabled = true;
+  try {
+    const acc = await connect();
+    if (acc.toLowerCase() !== feeData.wallet.toLowerCase()) throw new Error(`Your wallet is connected as ${short(acc)}. Switch to ${short(feeData.wallet)} to claim its fees.`);
+    const { BrowserProvider, Contract } = await getEthers();
+    const signer = await new BrowserProvider(window.ethereum).getSigner();
+    for (const r of feeData.rows.filter((x) => x.pendingETH > 0)) {
+      log(`sweeping $${r.symbol}…`);
+      const tx = await new Contract(r.curve, ["function sweepFees(uint256 minBuybackTokensOut)"], signer).sweepFees(0);
+      await tx.wait(); log(`$${r.symbol} swept · ${short(tx.hash)}`, "ok");
+    }
+    const st = await api("/api/status");
+    const esc_ = new Contract(st.escrow, ["function balanceOf(address) view returns (uint256)", "function claim()"], signer);
+    if ((await esc_.balanceOf(acc)) > 0n) { log("claiming from the escrow…"); const tx = await esc_.claim(); await tx.wait(); log(`claimed · ${short(tx.hash)}`, "ok"); }
+    log("done. The ETH is in your wallet.", "ok"); window.nova?.pulse(1);
+    setTimeout(() => checkFees(feeData.wallet), 2500);
+  } catch (e) { log(e.shortMessage || e.info?.error?.message || e.message, "bad"); btn.disabled = false; }
+}
+$("feeForm").addEventListener("submit", (e) => { e.preventDefault(); checkFees($("feeWallet").value); });
+$("feeConnect").addEventListener("click", async () => { try { checkFees(await connect()); } catch (e) { $("feeOut").innerHTML = `<p class="err">${esc(e.message)}</p>`; } });
+
+// launch kit
+$("kitForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const f = Object.fromEntries(new FormData(e.target)); $("kitGo").disabled = true;
+  $("kitOut").innerHTML = loading("Signal is writing your launch kit"); const t = setInterval(() => window.nova?.pulse(0.3), 400);
+  try {
+    const k = await api("/api/kit", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(f) });
+    const card = (title, body, copy) => `<div class="kc"><h5>${title}</h5><button class="cp" type="button" data-copy="${esc(copy)}">Copy</button>${body}</div>`;
+    const list = (a) => `<ol>${a.map((x) => `<li>${esc(x)}</li>`).join("")}</ol>`;
+    $("kitOut").innerHTML = `<div class="kit">
+      ${card("Tagline", `<p>${esc(k.tagline)}</p>`, k.tagline)}
+      ${card("X bio", `<p>${esc(k.bio)}</p>`, k.bio)}
+      ${card("Lore", `<p>${esc(k.lore)}</p>`, k.lore)}
+      ${card("Thread", list(k.thread), k.thread.join("\n\n"))}
+      ${card("Posts", list(k.posts), k.posts.join("\n\n"))}
+      ${card("Launch post", `<p>${esc(k.launchPost)}</p>`, k.launchPost)}</div>`;
+  } catch (e2) { $("kitOut").innerHTML = `<p class="err" style="margin-top:18px">${esc(e2.message)}</p>`; }
+  finally { clearInterval(t); $("kitGo").disabled = false; }
+});
+document.addEventListener("click", async (e) => { const b = e.target.closest("[data-copy]"); if (!b) return; try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = "Copied"; setTimeout(() => (b.textContent = "Copy"), 1200); } catch {} });
+
+// agent studio
+let chat = [];
+$("chatForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const text = $("chatIn").value.trim(); if (!text) return;
+  const f = Object.fromEntries(new FormData($("agentForm")));
+  if (!chat.length) $("msgs").innerHTML = "";
+  chat.push({ role: "user", content: text }); $("chatIn").value = "";
+  $("msgs").insertAdjacentHTML("beforeend", `<div class="m u">${esc(text)}</div><div class="m a wait" id="wait">…</div>`);
+  $("msgs").scrollTop = 1e9; $("chatGo").disabled = true; window.nova?.pulse(0.6);
+  try {
+    const r = await api("/api/agent", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...f, messages: chat }) });
+    chat.push({ role: "assistant", content: r.reply });
+    $("wait").outerHTML = `<div class="m a"><b style="color:var(--acc)">${esc(f.name || "Agent")}</b>\n${esc(r.reply)}</div>`;
+  } catch (e2) { chat.pop(); $("wait").outerHTML = `<div class="m a" style="color:#ff8a8d">${esc(e2.message)}</div>`; }
+  finally { $("chatGo").disabled = false; $("msgs").scrollTop = 1e9; }
+});
+$("agentForm").addEventListener("input", () => { chat = []; });
+
+// open from the address bar: #radar, #fees, … or ?ca=0x… for a scan
+const qca = new URLSearchParams(location.search).get("ca");
+const startTab = (location.hash || "").slice(1);
+if (qca) { openTab("scan", false, true); runScan(qca); } else openTab(VISOR[startTab] ? startTab : "scan", false, true);
+if (qca || VISOR[startTab]) setTimeout(() => $("app").scrollIntoView({ block: "start" }), 300);
+
+// ---------- sniper: the same engine as the Signal sniper bot, the private key stays in this browser ----------
+const PONS_FACTORY = "0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e";
+const SK = { key: "nova.sniper.key", cfg: "nova.sniper.cfg2", pos: "nova.sniper.pos2", hist: "nova.sniper.hist" };
+const sstore = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+// same defaults as sniper-config.example.json
+const SN_DEF = { buyEth: "0.005", maxTotalSpendEth: "0.05", takeProfitPercent: 50, stopLossPercent: 30, allowedDeployers: [], maxHoldSeconds: 0, maxOpenPositions: 3, gasReserveEth: "0.001", slippagePercent: 15, maxCreatorTaxPercent: 3, maxSnipeTaxPercent: 1, maxLaunchAgeSeconds: 30, requireSocials: 0, maxDeployerLaunches: 0, keywords: [], blockedKeywords: ["test"], blockedDeployers: [], mode: "manual", agentMinScore: 75 };
+const SN_NUM = ["slippagePercent", "maxCreatorTaxPercent", "maxSnipeTaxPercent", "maxLaunchAgeSeconds", "maxOpenPositions", "takeProfitPercent", "stopLossPercent", "maxHoldSeconds", "requireSocials", "maxDeployerLaunches"];
+const SN_ETH = ["buyEth", "maxTotalSpendEth", "gasReserveEth"];
+const SN_LIST = ["keywords", "blockedKeywords", "allowedDeployers", "blockedDeployers"];
+const SN_ABI = {
+  curve: ["function buy(uint256 quoteIn, uint256 minTokensOut, address recipient) payable returns (uint256 tokensOut)", "function sell(uint256 tokensIn, uint256 minQuoteOut, address recipient) returns (uint256 quoteOut)", "function creatorTaxBps() view returns (uint256)", "function currentSnipeTaxBps(address recipient) view returns (uint256)", "function graduated() view returns (bool)", "event CurveSell(address indexed seller, address indexed recipient, uint256 tokensIn, uint256 quoteOut, uint256 fee, uint256 tax)"],
+  token: ["function name() view returns (string)", "function symbol() view returns (string)", "function balanceOf(address) view returns (uint256)", "function allowance(address,address) view returns (uint256)", "function approve(address,uint256) returns (bool)", "function getTokenInfo() view returns (address tokenDeployer, string tokenLogo, string tokenDescription, tuple(string twitter, string telegram, string discord, string website, string farcaster) tokenSocials)"],
+  factory: ["function getLaunchedToken(address token) view returns (tuple(address token, address curve, address deployer, address creatorFeeRecipient, address pairToken, uint256 graduationThreshold, uint256 initialLiquidity, uint24 poolFee, int24 tickSpacing, uint16 creatorTaxBps, bool buybackEnabled, uint8 phase, uint256 sweptQuote, uint256 sweptTokens, bool exists))"],
+};
+const SN_LAUNCHED = "0x" + "0".repeat(64); // set once ethers loads
+let snCfg = { ...SN_DEF, ...sstore.get(SK.cfg, {}) }, snPositions = sstore.get(SK.pos, []), snHistory = sstore.get(SK.hist, []);
+let Eth = null, snP = null, snW = null, snMode = null, snSpent = 0n, snNext = 0, snWaiting = [], snBuySent = new Set(), snTimer = null, snLastPos = 0, snTopic = null, snTx = Promise.resolve();
+const snQ = (fn) => (snTx = snTx.then(fn, fn)); // one transaction at a time so nonces never clash
+const snEth = (w) => Number(Eth.formatEther(BigInt(w))).toLocaleString("en-US", { maximumFractionDigits: 6 });
+const snShort = (e) => (e?.shortMessage || e?.info?.error?.message || e?.message || String(e)).slice(0, 160);
+function snLog(t, c = "") { const el = $("snLog"); el.insertAdjacentHTML("afterbegin", `<div class="${c}">[${new Date().toLocaleTimeString("en-GB")}] ${esc(t)}</div>`); while (el.children.length > 300) el.lastChild.remove(); }
+const savePos = () => { sstore.set(SK.pos, snPositions); snDrawPos(); };
+
+async function snBoot() {
+  if (Eth) return;
+  Eth = await getEthers();
+  snP = new Eth.JsonRpcProvider(location.origin + "/rpc", 4663, { staticNetwork: true, batchMaxCount: 1, pollingInterval: 1000 });
+  snTopic = Eth.id("TokenLaunched(address,address,address,address,uint256,uint256)");
+  let k = null; try { k = localStorage.getItem(SK.key); } catch {}
+  snW = k ? new Eth.Wallet(k, snP) : null;
+  snFill(); snDrawWallet(); snDrawPos(); snDrawHist();
+}
+async function snDrawWallet() {
+  $("snAddr").textContent = snW ? snW.address : "No private key yet. Paste one in Settings, or make a new wallet.";
+  if (!snW) return ($("snBalLine").textContent = "");
+  try { $("snBalLine").textContent = snEth(await snP.getBalance(snW.address)) + " ETH"; } catch { $("snBalLine").textContent = "balance unreadable"; }
+}
+function snFill() {
+  for (const el of $("snForm").elements) {
+    if (!el.name || el.name === "privateKey") continue;
+    const v = snCfg[el.name]; el.value = Array.isArray(v) ? v.join(", ") : v ?? "";
+  }
+}
+// same validation as the bot dashboard
+$("snForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const f = $("snForm").elements, next = { ...snCfg };
+  for (const n of SN_NUM) { const v = Number(f[n].value); if (!Number.isFinite(v) || v < 0) return snMsg(`${n} must be a number >= 0`, true); next[n] = v; }
+  for (const n of SN_ETH) { const v = f[n].value.trim(); if (!/^\d+(\.\d{1,18})?$/.test(v)) return snMsg(`${n} must be an ETH amount like 0.005`, true); next[n] = v; }
+  for (const n of SN_LIST) next[n] = f[n].value.split(/[\s,]+/).map((s) => s.trim()).filter(Boolean);
+  if ([...next.keywords, ...next.blockedKeywords].some((k) => /^0x[0-9a-fA-F]{40}$/.test(k))) return snMsg("Keywords cannot be wallet addresses. Dev addresses go in field 6 (or Blocked devs).", true);
+  const key = f.privateKey.value.trim();
+  if (key) {
+    if (!/^(0x)?[0-9a-fA-F]{64}$/.test(key)) return snMsg("The private key must be 64 hex characters.", true);
+    if (snMode) return snMsg("Stop the bot before changing the key.", true);
+    snW = new Eth.Wallet(key.startsWith("0x") ? key : "0x" + key, snP);
+    try { localStorage.setItem(SK.key, snW.privateKey); } catch {}
+    f.privateKey.value = "";
+  }
+  snCfg = next; sstore.set(SK.cfg, snCfg); snDrawWallet(); snMsg("Settings saved.");
+});
+function snMsg(t, bad) { $("snMsg").innerHTML = `<span style="color:${bad ? "#ff8a8d" : "var(--ok)"}">${esc(t)}</span>`; }
+$("snNewWallet").addEventListener("click", () => {
+  if (snMode) return snMsg("Stop the bot first.", true);
+  if (snW && !confirm("Replace the saved sniper wallet with a new one? Export the old key first if it holds funds.")) return;
+  const w = Eth.Wallet.createRandom(); snW = w.connect(snP); try { localStorage.setItem(SK.key, w.privateKey); } catch {}
+  snDrawWallet(); snLog("new sniper wallet " + w.address + ". Fund it, and back up the key with Export key.");
+});
+$("snExport").addEventListener("click", () => { if (!snW) return; if (confirm("Show the private key? Anyone who sees it can take the funds.")) prompt("Sniper wallet private key:", snW.privateKey); });
+$("snForget").addEventListener("click", async () => {
+  if (!snW) return; if (snMode) return snMsg("Stop the bot first.", true);
+  const bal = await snP.getBalance(snW.address).catch(() => 0n);
+  if (!confirm(bal > 0n ? `This wallet still holds ${snEth(bal)} ETH. Export the key first or it is lost. Remove anyway?` : "Remove the key from this browser?")) return;
+  try { localStorage.removeItem(SK.key); } catch {} snW = null; snDrawWallet();
+});
+$("snWithdraw").addEventListener("click", async () => {
+  if (!snW) return;
+  const to = (prompt("Send all ETH from the sniper wallet to (0x…):") || "").trim();
+  if (!Eth.isAddress(to)) return to && alert("That is not an address.");
+  await snQ(async () => {
+    try {
+      const bal = await snP.getBalance(snW.address), fee = await snP.getFeeData(), gp = (fee.maxFeePerGas || fee.gasPrice) * 2n, cost = 21000n * gp;
+      if (bal <= cost) throw new Error("Balance is too small to cover gas.");
+      const tx = await snW.sendTransaction({ to, value: bal - cost, gasLimit: 21000n, maxFeePerGas: gp, maxPriorityFeePerGas: fee.maxPriorityFeePerGas ?? 0n });
+      snLog(`WITHDRAW ${snEth(bal - cost)} ETH -> ${to} (${tx.hash})`); await tx.wait(); snDrawWallet();
+    } catch (e) { snLog("withdraw failed: " + snShort(e), "bad"); }
+  });
+});
+
+// ---------- buying ----------
+const lower = (a) => (a || []).map((s) => s.toLowerCase());
+const devCount = new Map();
+async function devLaunches(dev) {
+  const c = devCount.get(dev); if (c !== undefined) return c;
+  try { const j = await api("/api/dev?addr=" + dev); devCount.set(dev, j.launches24h); return j.launches24h; } catch { return 0; }
+}
+/** Same checks as the bot: the reason a launch is skipped, or null; retry when only the anti-snipe tax is in the way. */
+async function snReject(l) {
+  const dev = l.deployer.toLowerCase();
+  if (l.pairToken !== Eth.ZeroAddress) return { reason: "not paired with ETH", symbol: "?" };
+  if (lower(snCfg.blockedDeployers).includes(dev)) return { reason: "deployer is blocked", symbol: "?" };
+  // an agent pick is chosen by Signal instead of by field 6, the launch age and the keyword list
+  if (!l.agent && snCfg.allowedDeployers.length && !lower(snCfg.allowedDeployers).includes(dev)) return { reason: "deployer not in field 6", symbol: "?" };
+  const t = new Eth.Contract(l.token, SN_ABI.token, snP), c = new Eth.Contract(l.curve, SN_ABI.curve, snP);
+  const [name, symbol, tax, snipe, grad, lb, head] = await Promise.all([t.name(), t.symbol(), c.creatorTaxBps(), c.currentSnipeTaxBps(snW.address), c.graduated(), l.agent ? null : snP.getBlock(l.block), l.agent ? null : snP.getBlock("latest")]);
+  const text = `${name} ${symbol}`.toLowerCase(), age = l.agent ? 0 : head.timestamp - lb.timestamp;
+  let reason = null;
+  if (grad) reason = "already graduated";
+  else if (!l.agent && age > snCfg.maxLaunchAgeSeconds) reason = `too late (${age}s old)`;
+  else if (Number(tax) > snCfg.maxCreatorTaxPercent * 100) reason = `creator tax ${Number(tax) / 100}% too high`;
+  else if (lower(snCfg.blockedKeywords).some((k) => text.includes(k))) reason = "name matches blocked keywords";
+  else if (!l.agent && snCfg.keywords.length && !lower(snCfg.keywords).some((k) => text.includes(k))) reason = "name matches no keyword";
+  if (!reason && snCfg.requireSocials) { const ti = await t.getTokenInfo(); if (!Object.values(ti[3].toObject()).some((v) => String(v).trim())) reason = "no socials set"; }
+  if (!reason && snCfg.maxDeployerLaunches) { const n = await devLaunches(dev); if (n > snCfg.maxDeployerLaunches) reason = `deployer launched ${n} other tokens in 24h (limit ${snCfg.maxDeployerLaunches})`; }
+  if (reason) return { reason, symbol };
+  if (Number(snipe) > snCfg.maxSnipeTaxPercent * 100) return { reason: `snipe tax ${Number(snipe) / 100}% still active`, symbol, retry: true };
+  return { reason: null, symbol };
+}
+async function snSnipe(l) {
+  if (snPositions.some((p) => p.token === l.token) || snBuySent.has(l.token)) return;
+  let r;
+  try { r = await snReject(l); }
+  catch (e) {
+    if (!snWaiting.some((w) => w.token === l.token)) { snWaiting.push(l); snLog(`wait  ${l.token}: ${snShort(e)}, retrying until max launch age`); }
+    if (Date.now() - (l.seenAt ||= Date.now()) > (l.agent ? 120 : snCfg.maxLaunchAgeSeconds) * 1000) { snWaiting = snWaiting.filter((w) => w.token !== l.token); snLog(`skip  ${l.token}: could not be read in time`); }
+    return;
+  }
+  const was = snWaiting.some((w) => w.token === l.token);
+  if (r.retry) { if (!was) { snWaiting.push(l); snLog(`wait  $${r.symbol} ${l.token}: ${r.reason}, retrying until it drops`); } return; }
+  snWaiting = snWaiting.filter((w) => w.token !== l.token);
+  if (r.reason) return snLog(`skip  $${r.symbol} ${l.token}: ${r.reason}`);
+  if (snPositions.length >= snCfg.maxOpenPositions) return snLog(`skip  $${r.symbol}: ${snPositions.length} positions already open`);
+  const BUY = Eth.parseEther(snCfg.buyEth), RES = Eth.parseEther(snCfg.gasReserveEth);
+  if (snSpent + BUY > Eth.parseEther(snCfg.maxTotalSpendEth)) return snLog(`skip  $${r.symbol}: total budget used up`);
+  const bal = await snP.getBalance(snW.address), live = snMode === "live";
+  // a wallet a little short still buys with what it has, like the bot; skip only under half of the buy size
+  const spendable = bal > RES ? bal - RES : 0n, buyWei = bal < BUY + RES && live ? spendable : BUY;
+  if (buyWei * 2n < BUY) return snLog(`skip  $${r.symbol}: wallet balance ${snEth(bal)} ETH is too low`);
+  const curve = new Eth.Contract(l.curve, SN_ABI.curve, snW);
+  let out;
+  try { out = await curve.buy.staticCall(buyWei, 0n, snW.address, { value: buyWei }); }
+  catch (e) {
+    if (!live) { snSpent += BUY; return snLog(`DRY   would buy $${r.symbol} ${l.token} with ${snCfg.buyEth} ETH (fund the wallet to see the token amount)`, "dry"); }
+    if (!snWaiting.some((w) => w.token === l.token)) snWaiting.push(l);
+    return snLog(`wait  $${r.symbol}: buy simulation failed (${snShort(e)}), retrying until max launch age`);
+  }
+  if (!live) { snSpent += BUY; return snLog(`DRY   would buy $${r.symbol} ${l.token} with ${snCfg.buyEth} ETH -> ${Number(Eth.formatEther(out)).toLocaleString("en-US")} tokens`, "dry"); }
+  const minOut = (out * BigInt(Math.round((100 - snCfg.slippagePercent) * 100))) / 10000n;
+  await snQ(async () => {
+    try {
+      snBuySent.add(l.token); snSpent += buyWei;
+      const tx = await curve.buy(buyWei, minOut, snW.address, { value: buyWei });
+      snPositions.push({ token: l.token, curve: l.curve, symbol: r.symbol, costWei: buyWei.toString(), boughtAt: Date.now(), buyTx: tx.hash }); savePos();
+      const rc = await tx.wait();
+      if (rc.status !== 1) { snSpent -= buyWei; snPositions = snPositions.filter((p) => p.token !== l.token); savePos(); snBuySent.delete(l.token); snWaiting.push(l); return snLog(`FAIL  buy $${r.symbol} reverted (${tx.hash}), retrying with a fresh price`, "bad"); }
+      snLog(`BUY   $${r.symbol} ${l.token} for ${Eth.formatEther(buyWei)} ETH (${tx.hash})`, "ok"); window.nova?.pulse(1); snDrawWallet();
+      const a = await new Eth.Contract(l.token, SN_ABI.token, snW).approve(l.curve, Eth.MaxUint256); await a.wait();
+    } catch (e) { snLog(`buy $${r.symbol} failed: ${snShort(e)}`, "bad"); }
+  });
+}
+
+// ---------- selling ----------
+async function snSellPos(pos, trigger) {
+  return snQ(async () => {
+    const me = snW.address, t = new Eth.Contract(pos.token, SN_ABI.token, snW), c = new Eth.Contract(pos.curve, SN_ABI.curve, snW);
+    const bal = await t.balanceOf(me);
+    if (bal === 0n) return snClose(pos, "sold outside the bot", null, null);
+    if ((await t.allowance(me, pos.curve)) < bal) { const a = await t.approve(pos.curve, Eth.MaxUint256); await a.wait(); }
+    const q = await c.sell.staticCall(bal, 0n, me);
+    const tx = await c.sell(bal, (q * BigInt(Math.round((100 - snCfg.slippagePercent) * 100))) / 10000n, me);
+    const rc = await tx.wait();
+    if (rc.status !== 1) return snLog(`FAIL  sell $${pos.symbol} reverted (${tx.hash}), will retry`, "bad");
+    // book what the curve really paid out
+    let got = q; for (const lg of rc.logs) { try { const ev = c.interface.parseLog(lg); if (ev?.name === "CurveSell" && lg.address.toLowerCase() === pos.curve.toLowerCase()) got = ev.args.quoteOut; } catch {} }
+    const pnl = Number(((got - BigInt(pos.costWei)) * 10000n) / BigInt(pos.costWei)) / 100;
+    snClose(pos, trigger, got, tx.hash);
+    snLog(`SELL  $${pos.symbol} (${trigger}) for ${Eth.formatEther(got)} ETH, ${pnl >= 0 ? "+" : ""}${pnl}% (${tx.hash})`, pnl >= 0 ? "ok" : "bad"); snDrawWallet();
+  });
+}
+function snClose(pos, reason, got, tx) {
+  snPositions = snPositions.filter((p) => p.token !== pos.token); savePos();
+  snHistory.unshift({ token: pos.token, symbol: pos.symbol, costWei: pos.costWei, receivedWei: got === null ? null : got.toString(), boughtAt: pos.boughtAt, closedAt: Date.now(), reason, tx });
+  sstore.set(SK.hist, snHistory); snDrawHist();
+}
+async function snManage() {
+  const me = snW.address;
+  for (const pos of [...snPositions]) {
+    try {
+      const t = new Eth.Contract(pos.token, SN_ABI.token, snP), c = new Eth.Contract(pos.curve, SN_ABI.curve, snP);
+      const [bal, grad] = await Promise.all([t.balanceOf(me), c.graduated()]);
+      if (bal === 0n) { snClose(pos, "sold outside the bot", null, null); snLog(`CLOSE $${pos.symbol}: no tokens left in the wallet`); continue; }
+      if (grad) { snClose(pos, "graduated", null, null); snLog(`GRAD  $${pos.symbol} graduated to the DEX. Sell ${pos.token} there manually.`); continue; }
+      const q = await c.sell.staticCall(bal, 0n, me).catch(() => null);
+      if (q === null) continue;
+      const cost = BigInt(pos.costWei), pnl = Number(((q - cost) * 10000n) / cost) / 100;
+      pos.valueWei = q.toString(); pos.pnlPercent = pnl;
+      const held = (Date.now() - pos.boughtAt) / 1000;
+      let trig = null;
+      if (pnl >= snCfg.takeProfitPercent) trig = "take profit"; else if (pnl <= -snCfg.stopLossPercent) trig = "stop loss"; else if (snCfg.maxHoldSeconds > 0 && held >= snCfg.maxHoldSeconds) trig = "max hold time";
+      if (trig && snMode === "live") snSellPos(pos, trig).catch((e) => snLog(`sell $${pos.symbol} failed: ${snShort(e)}`, "bad"));
+    } catch {}
+  }
+  savePos();
+}
+
+// ---------- main loop: new launches straight from the factory, like the bot ----------
+async function snLoop() {
+  if (!snMode) return;
+  try {
+    if (snCfg.mode === "agent") await snAgentTick();
+    const head = snCfg.mode === "agent" ? 0 : await snP.getBlockNumber();
+    if (!snNext) snNext = head + 1;
+    if (snCfg.mode !== "agent" && head >= snNext) {
+      const logs = await snP.getLogs({ address: PONS_FACTORY, topics: [snTopic], fromBlock: snNext, toBlock: Math.min(head, snNext + 4000) });
+      snNext = Math.min(head, snNext + 4000) + 1;
+      for (const lg of logs) {
+        const l = { token: Eth.getAddress("0x" + lg.topics[1].slice(26)), curve: Eth.getAddress("0x" + lg.topics[2].slice(26)), deployer: Eth.getAddress("0x" + lg.topics[3].slice(26)), pairToken: Eth.getAddress("0x" + lg.data.slice(26, 66)), block: lg.blockNumber };
+        snSnipe(l);
+      }
+    }
+    for (const w of [...snWaiting]) snSnipe(w);
+    if (Date.now() - snLastPos > 3000) { snLastPos = Date.now(); snManage(); }
+  } catch (e) { snLog("rpc: " + snShort(e), "bad"); }
+  snTimer = setTimeout(snLoop, 700);
+}
+// ---------- agent snipe: buy what Signal's AI picks from the radar ----------
+let snPicks = [], snPicksAt = 0, snPicksErr = "", snPicksInfo = null;
+const snTried = new Set();
+async function snFetchPicks(refresh) {
+  try { const j = await api("/api/picks" + (refresh ? "?refresh=1" : "")); snPicks = j.picks; snPicksErr = j.error || ""; snPicksAt = Date.now(); snPicksInfo = j; } catch (e) { snPicksErr = e.message; }
+  snDrawPicks();
+}
+async function snAgentTick() {
+  if (Date.now() - snPicksAt < 5000) return;
+  await snFetchPicks();
+  for (const p of snPicks) {
+    if (p.score < snCfg.agentMinScore || snTried.has(p.token) || snHistory.some((h) => h.token === p.token) || snPositions.some((x) => x.token === p.token)) continue;
+    snTried.add(p.token);
+    snLog(`AGENT Signal picked $${p.symbol} (score ${p.score}): ${p.reason}`, "ok");
+    snSnipe({ token: p.token, curve: p.curve, deployer: p.deployer, pairToken: Eth.ZeroAddress, agent: true });
+  }
+}
+function snDrawPicks() {
+  const min = snCfg.agentMinScore;
+  $("pkStat").textContent = snPicksErr ? snPicksErr : snPicksAt ? `updated ${new Date(snPicksAt).toLocaleTimeString("en-GB")}` : "";
+  $("pkList").innerHTML = snPicks.length ? snPicks.map((p) => `<div class="pick"><div class="ring" style="--v:${p.score};--c:${p.score >= 80 ? "var(--ok)" : p.score >= 70 ? "var(--acc)" : "var(--mid)"}" title="Signal score ${p.score}/100"><b>${p.score}</b></div>
+      <div><div class="nm"><a href="#" data-scan="${p.token}">$${esc(p.symbol)}</a> <span style="color:var(--dim);font-weight:400">${esc(p.name)}</span>${p.score >= min ? ' <span class="pill2 dry" style="padding:2px 8px;font-size:11px">agent buys</span>' : ""}</div>
+      <div class="rs">${esc(p.reason)}</div><div class="mt">${Math.round(p.ageSec / 60)}m old · curve ${p.progressPct.toFixed(1)}% · ${fmt(p.curveETH, 4)} ETH · tax ${p.taxPct}% · ${p.token.slice(0, 8)}…</div></div>
+      <button class="btn sm ghost" type="button" data-pkbuy="${p.token}">Manual buy</button></div>`).join("")
+    : `<p class="note">${!snPicksAt ? "Loading Signal picks…" : snPicksInfo?.checkedLastHour ? `Signal scored ${snPicksInfo.checkedLastHour} fresh launch${snPicksInfo.checkedLastHour > 1 ? "es" : ""} in the last hour; the best got ${snPicksInfo.bestLastHour}/100, under the ${snPicksInfo.minScore} needed to be a pick. It checks again every 15 seconds.` : "Signal is scoring the newest launches that passed the radar checks. Picks show here as soon as one scores high enough."}</p>`;
+  if (snPicks.length && snPicksInfo?.checkedLastHour) $("pkList").insertAdjacentHTML("beforeend", `<p class="note" style="margin:4px 0 0">Signal scored ${snPicksInfo.checkedLastHour} fresh launches in the last hour; ${snPicks.length} made the cut.</p>`);
+}
+$("pkRefresh").addEventListener("click", async () => {
+  const b = $("pkRefresh"), before = JSON.stringify(snPicks.map((p) => [p.token, p.score]));
+  b.disabled = true; b.textContent = "Signal is checking…";
+  await snBoot(); await snFetchPicks(true);
+  const same = before === JSON.stringify(snPicks.map((p) => [p.token, p.score]));
+  b.disabled = false; b.textContent = "Refresh";
+  $("pkStat").textContent = (same ? "no better launch yet · " : "updated · ") + new Date().toLocaleTimeString("en-GB");
+});
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-pkbuy]"); if (!b) return;
+  $("mbToken").value = b.dataset.pkbuy; $("mbToken").scrollIntoView({ behavior: "smooth", block: "center" }); $("mbToken").focus();
+});
+// the picks list refreshes while the sniper tab is on screen
+setInterval(() => { if (!snMode && $("pkList").offsetParent) snBoot().then(snFetchPicks); }, 10_000);
+function snSetMode(m) {
+  if (snMode) return snMsg("Stop the bot before switching mode.", true);
+  snCfg.mode = m === "agent" ? "agent" : "manual"; sstore.set(SK.cfg, snCfg);
+  document.querySelectorAll("#snModeSw button").forEach((b) => b.classList.toggle("on", b.dataset.mode === snCfg.mode));
+  $("snAgentBox").hidden = snCfg.mode !== "agent";
+}
+document.querySelectorAll("#snModeSw button").forEach((b) => b.addEventListener("click", () => snSetMode(b.dataset.mode)));
+function snMinShow(v) { $("snMinVal").textContent = v; $("snMinScore").style.setProperty("--p", ((v - 50) / 45) * 100 + "%"); }
+$("snMinScore").value = snCfg.agentMinScore; snMinShow(snCfg.agentMinScore);
+$("snMinScore").addEventListener("input", (e) => snMinShow(+e.target.value));
+$("snMinScore").addEventListener("change", (e) => { snCfg.agentMinScore = Math.round(+e.target.value); sstore.set(SK.cfg, snCfg); snDrawPicks(); });
+document.querySelectorAll("#snModeSw button").forEach((b) => b.classList.toggle("on", b.dataset.mode === snCfg.mode));
+$("snAgentBox").hidden = snCfg.mode !== "agent";
+
+async function snStart(mode) {
+  await snBoot();
+  if (!snW) return snMsg("Paste a private key in Settings (field 1) and save, or make a new wallet.", true);
+  if (snMode) return snMsg("Already running. Stop it first.", true);
+  if (mode === "live" && !confirm(`LIVE buys for real: ${snCfg.buyEth} ETH per token, up to ${snCfg.maxTotalSpendEth} ETH. Keep this tab open. Start?`)) return;
+  snMode = mode; snSpent = 0n; snNext = 0; snWaiting = []; snTried.clear(); snPicksAt = 0;
+  $("snState").textContent = mode === "live" ? "LIVE: real buys & sells" : "Dry run: no transactions"; $("snState").className = "pill2 " + mode;
+  snLog(`Pons sniper ${mode === "live" ? "LIVE" : "DRY RUN"} · ${snCfg.mode === "agent" ? `AGENT mode: buys Signal picks scoring ${snCfg.agentMinScore}+` : "manual mode: your filters"} · wallet ${snW.address} · buy ${snCfg.buyEth} ETH each, budget ${snCfg.maxTotalSpendEth} ETH, max ${snCfg.maxOpenPositions} positions · TP +${snCfg.takeProfitPercent}% / SL -${snCfg.stopLossPercent}% / hold ${snCfg.maxHoldSeconds || "∞"}s`, mode === "live" ? "ok" : "dry");
+  window.nova?.say(mode === "live" ? "LIVE" : "DRY RUN");
+  snLoop();
+}
+function snStop() { if (!snMode) return; snMode = null; clearTimeout(snTimer); $("snState").textContent = "Off"; $("snState").className = "pill2"; snLog("stopped"); window.nova?.say("SNIPER"); }
+$("snDry").addEventListener("click", () => snStart("dry"));
+$("snLiveBtn").addEventListener("click", () => snStart("live"));
+$("snStop").addEventListener("click", snStop);
+
+// ---------- manual buy / sell ----------
+$("mbGo").addEventListener("click", async () => {
+  await snBoot();
+  const ca = $("mbToken").value.trim(), m = (t, bad) => ($("mbMsg").innerHTML = `<span style="color:${bad ? "#ff8a8d" : "var(--ok)"}">${esc(t)}</span>`);
+  if (!snW) return m("Save a private key first.", true);
+  if (!Eth.isAddress(ca)) return m("Paste a token CA (0x…).", true);
+  const amt = $("mbEth").value.trim() || snCfg.buyEth;
+  if (!/^\d+(\.\d{1,18})?$/.test(amt)) return m("ETH must be an amount like 0.005.", true);
+  try {
+    const rec = await new Eth.Contract(PONS_FACTORY, SN_ABI.factory, snP).getLaunchedToken(ca);
+    if (!rec.exists) return m("That token was not launched on Pons.", true);
+    const curve = new Eth.Contract(rec.curve, SN_ABI.curve, snW), token = new Eth.Contract(ca, SN_ABI.token, snP);
+    const [symbol, grad, snipe] = await Promise.all([token.symbol(), curve.graduated(), curve.currentSnipeTaxBps(snW.address)]);
+    if (grad) return m(`$${symbol} already graduated to the DEX, buy it there.`, true);
+    if (Number(snipe) > snCfg.maxSnipeTaxPercent * 100) return m(`Anti-snipe tax on $${symbol} is still ${Number(snipe) / 100}% (limit ${snCfg.maxSnipeTaxPercent}%). Wait a few seconds and try again.`, true);
+    const wei = Eth.parseEther(amt), bal = await snP.getBalance(snW.address);
+    if (bal < wei + Eth.parseEther(snCfg.gasReserveEth)) return m(`The sniper wallet has ${snEth(bal)} ETH. It needs ${amt} ETH plus the ${snCfg.gasReserveEth} ETH gas reserve.`, true);
+    if (!confirm(`Buy $${symbol} for ${amt} ETH now?`)) return;
+    const out = await curve.buy.staticCall(wei, 0n, snW.address, { value: wei });
+    await snQ(async () => {
+      const tx = await curve.buy(wei, (out * BigInt(Math.round((100 - snCfg.slippagePercent) * 100))) / 10000n, snW.address, { value: wei });
+      m(`Buying $${symbol}… ${tx.hash}`);
+      const rc = await tx.wait(); if (rc.status !== 1) throw new Error("buy reverted (price moved)");
+      snPositions.push({ token: Eth.getAddress(ca), curve: rec.curve, symbol, costWei: wei.toString(), boughtAt: Date.now(), buyTx: tx.hash }); savePos();
+      snLog(`BUY   $${symbol} ${ca} (manual) for ${amt} ETH (${tx.hash})`, "ok"); m(`Bought $${symbol}. The bot manages it with your take profit and stop loss while it runs.`);
+      const a = await new Eth.Contract(ca, SN_ABI.token, snW).approve(rec.curve, Eth.MaxUint256); await a.wait(); snDrawWallet();
+    });
+  } catch (e) { m(snShort(e), true); }
+});
+document.addEventListener("click", async (e) => {
+  const b = e.target.closest("[data-snsell]"); if (!b) return;
+  const pos = snPositions.find((p) => p.token === b.dataset.snsell); if (!pos || !snW) return;
+  if (!confirm(`Sell all $${pos.symbol} now?`)) return;
+  b.disabled = true; try { await snSellPos(pos, "manual"); } catch (er) { snLog(`sell $${pos.symbol} failed: ${snShort(er)}`, "bad"); b.disabled = false; }
+});
+
+// ---------- tables ----------
+const REASONS = { "take profit": "Take profit", "stop loss": "Stop loss", "max hold time": "Hold time over", manual: "Manual sell", graduated: "Graduated to DEX (sell manually)", "sold outside the bot": "Sold outside the bot" };
+function snDrawPos() {
+  if (!Eth) return;
+  $("snPos").innerHTML = snPositions.length ? `<table><tr class="th"><td>Token</td><td>Cost</td><td>Value now</td><td>PnL</td><td>Bought</td><td></td></tr>${snPositions.map((p) => `<tr><td><a href="#" data-scan="${p.token}">$${esc(p.symbol)}</a></td><td>${snEth(p.costWei)} ETH</td><td>${p.valueWei ? snEth(p.valueWei) + " ETH" : "…"}</td><td style="color:${(p.pnlPercent ?? 0) >= 0 ? "var(--ok)" : "var(--high)"}">${p.pnlPercent === undefined ? "…" : (p.pnlPercent >= 0 ? "+" : "") + p.pnlPercent + "%"}</td><td>${new Date(p.boughtAt).toLocaleTimeString("en-GB")}</td><td class="r"><button class="btn sm danger" type="button" data-snsell="${p.token}">Sell now</button></td></tr>`).join("")}</table>` : `<p class="note">No positions.</p>`;
+}
+function snDrawHist() {
+  if (!Eth) return;
+  const known = snHistory.filter((t) => t.receivedWei !== null);
+  const total = known.reduce((s, t) => s + BigInt(t.receivedWei) - BigInt(t.costWei), 0n);
+  $("snPnl").textContent = known.length ? `Total PnL ${total >= 0n ? "+" : "-"}${snEth(total < 0n ? -total : total)} ETH over ${known.length} trades` : "";
+  $("snHist").innerHTML = snHistory.length ? `<table><tr class="th"><td>Token</td><td>Cost</td><td>Got</td><td>PnL</td><td>Reason</td><td>Closed</td><td></td></tr>${snHistory.map((t, i) => {
+    const pnl = t.receivedWei === null ? null : Number(((BigInt(t.receivedWei) - BigInt(t.costWei)) * 10000n) / BigInt(t.costWei)) / 100;
+    return `<tr><td>$${esc(t.symbol)}</td><td>${snEth(t.costWei)} ETH</td><td>${t.receivedWei === null ? "-" : snEth(t.receivedWei) + " ETH"}</td><td style="color:${(pnl ?? 0) >= 0 ? "var(--ok)" : "var(--high)"}">${pnl === null ? "-" : (pnl >= 0 ? "+" : "") + pnl + "%"}</td><td>${esc(REASONS[t.reason] || t.reason)}</td><td>${new Date(t.closedAt).toLocaleString("en-GB")}</td><td class="r"><button class="btn sm ghost" type="button" data-sndel="${i}">Delete</button></td></tr>`;
+  }).join("")}</table>` : `<p class="note">No finished trades yet.</p>`;
+}
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-sndel]"); if (!b) return; snHistory.splice(+b.dataset.sndel, 1); sstore.set(SK.hist, snHistory); snDrawHist(); });
+$("snClearHist").addEventListener("click", () => { if (snHistory.length && confirm("Delete the whole trade history?")) { snHistory = []; sstore.set(SK.hist, snHistory); snDrawHist(); } });
+document.querySelector('#tabs button[data-t="snipe"]').addEventListener("click", () => snBoot());
+if (location.hash === "#snipe") snBoot();
+
+// ---------- fee claimer: many accounts of one seed, derived and signed only in this browser ----------
+const SEED_PATH = "m/44'/60'/0'/0"; // MetaMask / Rabby accounts: Account 1 = index 0
+let seedAccs = [], seedRows = [], seedProv = null, seedBusy = false;
+document.querySelectorAll(".fmode button").forEach((b) => b.addEventListener("click", () => {
+  document.querySelectorAll(".fmode button").forEach((x) => x.classList.toggle("on", x === b));
+  $("feeOne").hidden = b.dataset.m !== "one"; $("feeSeed").hidden = b.dataset.m !== "seed";
+}));
+function drawWords(n) {
+  const old = [...document.querySelectorAll("#words input")].map((i) => i.value);
+  $("words").innerHTML = Array.from({ length: n }, (_, i) => `<label><span>${i + 1}</span><input type="password" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(old[i] || "")}"></label>`).join("");
+}
+drawWords(12);
+$("wordCount").addEventListener("change", (e) => drawWords(+e.target.value));
+$("words").addEventListener("paste", (e) => {
+  const t = (e.clipboardData?.getData("text") || "").trim().toLowerCase().split(/\s+/);
+  if (t.length < 2) return;
+  e.preventDefault();
+  if (t.length === 24 || t.length === 12) { $("wordCount").value = String(t.length); drawWords(t.length); }
+  document.querySelectorAll("#words input").forEach((inp, i) => (inp.value = t[i] || ""));
+});
+$("showWords").addEventListener("change", (e) => document.querySelectorAll("#words input").forEach((i) => (i.type = e.target.checked ? "text" : "password")));
+function forgetSeed() {
+  document.querySelectorAll("#words input").forEach((i) => (i.value = "")); seedAccs = []; seedRows = [];
+  $("seedOut").innerHTML = `<p class="note">Seed cleared from this page.</p>`;
+}
+$("seedForget").addEventListener("click", forgetSeed);
+
+$("seedScan").addEventListener("click", async () => {
+  if (seedBusy) return;
+  const E2 = await getEthers();
+  const phrase = [...document.querySelectorAll("#words input")].map((i) => i.value.trim().toLowerCase()).join(" ");
+  if (!E2.Mnemonic.isValidMnemonic(phrase)) return ($("seedOut").innerHTML = `<p class="err">These words are not a valid seed phrase. Check the spelling and the order.</p>`);
+  const n = Math.min(200, Math.max(1, parseInt($("seedCount").value) || 100));
+  seedProv ||= new E2.JsonRpcProvider(location.origin + "/rpc", 4663, { staticNetwork: true, batchMaxCount: 1, pollingInterval: 1500 });
+  seedBusy = true; $("seedScan").disabled = true;
+  $("seedOut").innerHTML = loading(`Making ${n} accounts in your browser`);
+  try {
+    await new Promise((r) => setTimeout(r, 30));
+    const root = E2.HDNodeWallet.fromPhrase(phrase, undefined, SEED_PATH);
+    seedAccs = Array.from({ length: n }, (_, i) => root.deriveChild(i).connect(seedProv));
+    if (!E2.isAddress($("seedDest").value.trim())) $("seedDest").value = seedAccs[0].address;
+    $("seedOut").innerHTML = loading(`Reading fees for ${n} accounts (only addresses are sent)`);
+    const j = await api("/api/fees-many", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ wallets: seedAccs.map((a) => a.address) }) });
+    seedRows = j.accounts.map((r, i) => ({ ...r, i })); seedEscrow = j.escrow; drawSeed();
+  } catch (e) { $("seedOut").innerHTML = `<p class="err">${esc(e.message)}</p>`; }
+  finally { seedBusy = false; $("seedScan").disabled = false; }
+});
+let seedEscrow = null, seedAll = false;
+function drawSeed() {
+  const E2 = ethersLib, min = E2.parseEther(String(parseFloat($("seedMin").value) || 0));
+  const total = seedRows.reduce((s, r) => s + BigInt(r.totalWei), 0n);
+  const ready = seedRows.filter((r) => BigInt(r.totalWei) >= min && BigInt(r.totalWei) > 0n);
+  const launched = seedRows.filter((r) => r.tokens.length).length;
+  const rows = seedAll ? seedRows : seedRows.filter((r) => r.tokens.length || BigInt(r.escrowWei) > 0n);
+  $("seedOut").innerHTML = `
+    <div class="total"><div><span class="lbl">Claimable across ${seedRows.length} accounts</span><br><b>${fmt(Number(E2.formatEther(total)), 6)} ETH</b></div>
+      <div style="text-align:right"><span class="lbl">${launched} accounts launched tokens · ${ready.length} above the minimum</span><br>
+      <button class="btn" id="seedClaim" style="margin-top:10px" ${ready.length ? "" : "disabled"}>Claim all ${ready.length} accounts <span class="ar">→</span></button></div></div>
+    <label class="tog" style="margin-bottom:8px"><input type="checkbox" id="seedShowAll" ${seedAll ? "checked" : ""}> show accounts with nothing to claim</label>
+    ${rows.length ? `<table>${rows.map((r) => `<tr><td style="color:var(--dim);width:72px">Acc ${r.i + 1}</td><td class="mono" style="font-size:12px">${short(seedAccs[r.i].address)}</td>
+      <td>${r.tokens.map((t) => `<a href="#" data-scan="${t.token}">$${esc(t.symbol)}</a>`).join(" ") || '<span style="color:var(--dim)">—</span>'}</td>
+      <td class="r">${fmt(Number(E2.formatEther(BigInt(r.totalWei))), 6)} ETH</td><td class="r" style="color:var(--dim)">gas ${fmt(Number(E2.formatEther(BigInt(r.ethWei))), 5)}</td></tr>`).join("")}</table>` : `<p class="note">None of these accounts launched a Pons token.</p>`}
+    <div class="steps2" id="seedLog"></div>`;
+  $("seedShowAll").onchange = (e) => { seedAll = e.target.checked; drawSeed(); };
+  $("seedClaim")?.addEventListener("click", seedClaimAll);
+}
+$("seedMin").addEventListener("input", () => seedRows.length && drawSeed());
+
+async function seedClaimAll() {
+  const E2 = ethersLib, log = (t, c = "") => $("seedLog").insertAdjacentHTML("beforeend", `<div class="${c}">&gt; ${esc(t)}</div>`);
+  const dest = $("seedDest").value.trim();
+  if (!E2.isAddress(dest)) return log("Fill in a valid wallet to send the fees to.", "bad");
+  const min = E2.parseEther(String(parseFloat($("seedMin").value) || 0));
+  const todo = seedRows.filter((r) => BigInt(r.totalWei) >= min && BigInt(r.totalWei) > 0n);
+  if (!confirm(`Claim fees from ${todo.length} accounts and send them to ${short(dest)}? Each account signs its own transactions in this browser.`)) return;
+  $("seedClaim").disabled = true; seedBusy = true;
+  const funder = seedAccs[0], escrowAbi = ["function balanceOf(address) view returns (uint256)", "function claim()"];
+  let done = 0, got = 0n;
+  try {
+    for (const r of todo) {
+      const acc = seedAccs[r.i], label = `Acc ${r.i + 1}`, sweeps = r.tokens.filter((t) => BigInt(t.pendingWei) > 0n);
+      try {
+        const fee = await seedProv.getFeeData(), gp = (fee.maxFeePerGas || fee.gasPrice) * 3n / 2n;
+        const need = (BigInt(sweeps.length) * 600_000n + 150_000n + 30_000n) * gp;
+        const has = await seedProv.getBalance(acc.address);
+        if (has < need && acc.address !== funder.address) {
+          const top = need - has;
+          log(`${label}: sending ${fmt(Number(E2.formatEther(top)), 6)} ETH gas from Acc 1`);
+          const t = await funder.sendTransaction({ to: acc.address, value: top }); await t.wait();
+        }
+        for (const t of sweeps) {
+          const tx = await new E2.Contract(t.curve, ["function sweepFees(uint256 minBuybackTokensOut)"], acc).sweepFees(0);
+          await tx.wait(); log(`${label}: swept $${t.symbol}`);
+        }
+        const esc_ = new E2.Contract(seedEscrow, escrowAbi, acc), owed = await esc_.balanceOf(acc.address);
+        if (owed > 0n) { const tx = await esc_.claim(); await tx.wait(); log(`${label}: claimed ${fmt(Number(E2.formatEther(owed)), 6)} ETH`, "ok"); got += owed; }
+        if (owed > 0n && acc.address.toLowerCase() !== dest.toLowerCase()) {
+          const tx = await acc.sendTransaction({ to: dest, value: owed }); await tx.wait();
+          log(`${label}: sent ${fmt(Number(E2.formatEther(owed)), 6)} ETH → ${short(dest)}`, "ok");
+        }
+        done++;
+      } catch (e) { log(`${label}: ${e.shortMessage || e.info?.error?.message || e.message}`, "bad"); }
+    }
+    log(`done: ${done}/${todo.length} accounts, ${fmt(Number(E2.formatEther(got)), 6)} ETH claimed.`, "ok"); window.nova?.pulse(1);
+  } finally { seedBusy = false; }
+}
+
+
+// ---------- launchpad: the LOCKEY Pons launch, signed in the visitor's own wallet ----------
+const LP = {
+  factory: "0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e",
+  launchAndBuy: "0xe33E9E479dF8802cb0866d5d05258bEc4cF62948",
+  fallbackLogo: "ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi",
+};
+const LP_PARAMS = "(string name,string symbol,string logo,string description,(string twitter,string telegram,string discord,string website,string farcaster) socials,address creatorFeeRecipient,uint16 creatorTaxBps,bool buybackEnabled,bytes32 expectedEconomics,bytes32 salt)";
+const LP_ABI = [
+  `function launchToken(${LP_PARAMS} params, uint256 launchConfigId, address pairToken) payable returns (address token, address curve)`,
+  `function launchToken(${LP_PARAMS} params, uint256 launchConfigId, address pairToken, address[] snipeTaxExemptions) payable returns (address token, address curve)`,
+  "function previewLaunchEconomics(uint256 launchConfigId, address pairToken) view returns (bytes32)",
+  "function launchFee() view returns (uint256)",
+  "event TokenLaunched(address indexed token, address indexed curve, address indexed deployer, address pairToken, uint256 launchConfigId, uint256 graduationThreshold)",
+];
+const LP_ROUTER = [`function launchAndBuy(${LP_PARAMS} params, uint256 launchConfigId, address pairToken, uint256 quoteIn, uint256 minTokensOut, address recipient, address[] snipeTaxExemptions) payable returns (address token, address curve, uint256 tokensOut)`];
+let lpE = null, lpRead = null, lpFee = null, lpEcon = null, lpAcc = null, lpBalWei = null, lpLogo = "", lpUploading = false, lpTax = 1;
+const lpF = () => $("lpForm").elements;
+const lpMsg = (t, c = "") => $("lpMsg").insertAdjacentHTML("beforeend", `<div class="${c}">&gt; ${esc(t)}</div>`);
+
+async function lpBoot() {
+  if (lpE) return;
+  lpE = await getEthers();
+  lpRead = new lpE.JsonRpcProvider(location.origin + "/rpc", 4663, { staticNetwork: true, batchMaxCount: 1 });
+  const f = new lpE.Contract(LP.factory, LP_ABI, lpRead);
+  try { [lpFee, lpEcon] = await Promise.all([f.launchFee(), f.previewLaunchEconomics(0n, lpE.ZeroAddress)]); } catch { lpFee = lpE.parseEther("0.0005"); }
+  lpSummary();
+}
+function lpDevWei() { const v = lpF().devBuy.value.trim(); try { return v && Number(v) > 0 ? lpE.parseEther(v) : 0n; } catch { return null; } }
+function lpSummary() {
+  if (!lpE) return;
+  const dev = lpDevWei(), fee = lpFee ?? lpE.parseEther("0.0005");
+  $("lpFee").textContent = lpE.formatEther(fee) + " ETH";
+  $("lpDev").textContent = dev === null ? "not a number" : lpE.formatEther(dev) + " ETH";
+  $("lpTotal").textContent = dev === null ? "…" : lpE.formatEther(fee + dev) + " ETH";
+  $("lpBal").textContent = lpBalWei === null || lpBalWei === undefined ? "—" : Number(lpE.formatEther(lpBalWei)).toFixed(5) + " ETH";
+  $("lpTax2").textContent = lpTax + "%";
+  const short_ = lpBalWei != null && dev !== null && lpBalWei < fee + dev;
+  $("lpBal").style.color = short_ ? "var(--high)" : "";
+}
+$("lpForm").addEventListener("input", (e) => { if (e.target.name === "symbol") e.target.value = e.target.value.toUpperCase(); if (e.target.name === "logoUrl") lpLinkLogo(); lpSummary(); });
+$("lpTaxes").addEventListener("click", (e) => { const b = e.target.closest("[data-tax]"); if (!b) return; lpTax = +b.dataset.tax; $("lpTaxes").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); $("lpTaxLbl").textContent = `${lpTax}% (${lpTax * 100} bps)`; lpSummary(); });
+
+// logo: upload (Catbox, then GitHub backup on the server) or a pasted link
+function lpShow(src) { const i = $("lpPrev"); if (src) { i.src = src; i.hidden = false; $("lpDropTxt").hidden = true; } else { i.hidden = true; $("lpDropTxt").hidden = false; } }
+function lpLinkLogo() {
+  const u = lpF().logoUrl.value.trim();
+  if (!u) { if (!lpUploading && !lpLogo) lpShow(null); return; }
+  if (!/^https:\/\/[^\s"'<>]+$/.test(u)) { $("lpUpMsg").innerHTML = `<span style="color:#ff8a8d">Paste a full image link that starts with https://</span>`; return; }
+  lpLogo = u; lpShow(u); $("lpUpMsg").textContent = "Using the pasted link.";
+}
+async function lpUpload(file) {
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) return ($("lpUpMsg").innerHTML = `<span style="color:#ff8a8d">File size exceeds 5MB limit</span>`);
+  lpShow(URL.createObjectURL(file)); lpUploading = true; lpLogo = ""; lpF().logoUrl.value = "";
+  $("lpUpMsg").innerHTML = `<span class="load" style="padding:0;justify-content:flex-start"><i></i>Uploading image…</span>`;
+  try {
+    const r = await fetch("/api/upload", { method: "POST", headers: { "content-type": file.type || "application/octet-stream" }, body: file });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || (r.status === 413 ? "Image too large for the server." : "Upload failed (" + r.status + ")."));
+    lpLogo = j.url; $("lpUpMsg").innerHTML = `Hosted at <a href="${esc(j.url)}" target="_blank" rel="noopener">${esc(j.url)}</a>`;
+  } catch (e) { lpShow(null); $("lpUpMsg").innerHTML = `<span style="color:#ff8a8d">${esc(e.message)}</span>`; }
+  finally { lpUploading = false; }
+}
+$("lpDrop").addEventListener("click", () => $("lpFile").click());
+$("lpFile").addEventListener("change", (e) => lpUpload(e.target.files?.[0]));
+$("lpDrop").addEventListener("dragover", (e) => { e.preventDefault(); $("lpDrop").classList.add("over"); });
+$("lpDrop").addEventListener("dragleave", () => $("lpDrop").classList.remove("over"));
+$("lpDrop").addEventListener("drop", (e) => { e.preventDefault(); $("lpDrop").classList.remove("over"); lpUpload(e.dataTransfer.files?.[0]); });
+
+// wallet
+async function lpConnect() {
+  await lpBoot();
+  lpAcc = lpE.getAddress(await connect());
+  $("lpWallet").textContent = lpAcc; $("lpConnect").textContent = "Connected";
+  lpBalWei = await lpRead.getBalance(lpAcc).catch(() => null); lpSummary();
+  return lpAcc;
+}
+$("lpConnect").addEventListener("click", () => lpConnect().catch((e) => lpMsg(e.message, "bad")));
+$("lpMax").addEventListener("click", async () => {
+  await lpBoot(); $("lpDevHint").textContent = "";
+  if (!lpAcc) return ($("lpDevHint").textContent = "Connect your EVM wallet (Robinhood Chain) first.");
+  lpBalWei = await lpRead.getBalance(lpAcc);
+  const safe = lpBalWei - lpFee - lpE.parseEther("0.001");
+  if (safe <= 0n) return ($("lpDevHint").textContent = `Balance ${Number(lpE.formatEther(lpBalWei)).toFixed(5)} ETH only covers the launch fee (${lpE.formatEther(lpFee)} ETH + 0.001 gas buffer). Top up ETH on Robinhood Chain.`);
+  lpF().devBuy.value = lpE.formatEther(safe); lpSummary();
+});
+$("lpAddSniper").addEventListener("click", async () => {
+  let k = null; try { k = localStorage.getItem("nova.sniper.key"); } catch {}
+  if (!k) return lpMsg("No Signal sniper wallet in this browser yet. Make one in the Sniper tab.", "bad");
+  const E2 = await getEthers(), a = new E2.Wallet(k).address, inp = lpF().exempt;
+  if (!inp.value.toLowerCase().includes(a.toLowerCase())) inp.value = [inp.value.trim(), a].filter(Boolean).join(", ");
+});
+
+// launch (same parameters and checks as LOCKEY)
+$("lpGo").addEventListener("click", async () => {
+  $("lpMsg").innerHTML = "";
+  await lpBoot();
+  const f = lpF(), name = f.name.value.trim(), symbol = f.symbol.value.trim();
+  if (!name || !symbol) return lpMsg("Fill in the name and the ticker.", "bad");
+  if (lpUploading) return lpMsg("The logo is still uploading. Wait until it finishes.", "bad");
+  const ex = f.exempt.value.split(/[\s,]+/).filter(Boolean), badEx = ex.find((a) => !lpE.isAddress(a));
+  if (badEx) return lpMsg(`Snipe tax exempt wallet "${badEx}" is not a valid 0x address.`, "bad");
+  const dev = lpDevWei(); if (dev === null) return lpMsg("Dev buy must be an ETH amount like 0.01.", "bad");
+  try {
+    const acc = lpAcc || (await lpConnect());
+    const fee = lpFee ?? lpE.parseEther("0.0005"), total = fee + dev;
+    lpBalWei = await lpRead.getBalance(acc).catch(() => lpBalWei); lpSummary();
+    if (lpBalWei != null && lpBalWei < total) return lpMsg("Insufficient ETH balance for launch fee + dev buy.", "bad");
+    const exempt = [...new Set(ex.map((a) => lpE.getAddress(a)))];
+    const params = {
+      name, symbol, logo: lpLogo || LP.fallbackLogo, description: f.description.value.trim(),
+      socials: { twitter: f.twitter.value.trim(), telegram: f.telegram.value.trim(), discord: f.discord.value.trim(), website: f.website.value.trim(), farcaster: "" },
+      creatorFeeRecipient: acc, creatorTaxBps: Math.min(Math.max(Math.round(lpTax * 100), 0), 1000), buybackEnabled: false,
+      expectedEconomics: lpEcon || lpE.ZeroHash, salt: lpE.hexlify(crypto.getRandomValues(new Uint8Array(32))),
+    };
+    if (!confirm(`Launch $${symbol} on Pons for ${lpE.formatEther(total)} ETH${dev > 0n ? " (incl. dev buy)" : ""}?`)) return;
+    const signer = await new lpE.BrowserProvider(window.ethereum).getSigner();
+    $("lpGo").disabled = true; lpMsg("Confirm the transaction in your wallet…");
+    let tx;
+    if (dev > 0n) tx = await new lpE.Contract(LP.launchAndBuy, LP_ROUTER, signer).launchAndBuy(params, 0n, lpE.ZeroAddress, dev, 0n, acc, exempt, { value: total });
+    else {
+      const fc = new lpE.Contract(LP.factory, LP_ABI, signer);
+      tx = exempt.length ? await fc["launchToken(" + LP_PARAMS + ",uint256,address,address[])"](params, 0n, lpE.ZeroAddress, exempt, { value: fee })
+                         : await fc["launchToken(" + LP_PARAMS + ",uint256,address)"](params, 0n, lpE.ZeroAddress, { value: fee });
+    }
+    lpMsg(`Sent ${tx.hash}. Waiting for the chain…`);
+    const rc = await tx.wait();
+    if (rc.status !== 1) throw new Error("The launch transaction reverted.");
+    const iface = new lpE.Interface(LP_ABI); let token = null, curve = null;
+    for (const lg of rc.logs) { try { const ev = iface.parseLog(lg); if (ev?.name === "TokenLaunched") { token = ev.args.token; curve = ev.args.curve; break; } } catch {} }
+    if (!token) for (const lg of rc.logs) if (lg.address.toLowerCase() === LP.factory.toLowerCase() && lg.topics[1]) { token = lpE.getAddress("0x" + lg.topics[1].slice(26)); break; }
+    lpMsg(`$${symbol} launched!`, "ok"); window.nova?.pulse(1); window.nova?.say("LAUNCHED");
+    $("lpDone").innerHTML = `<div class="kc" style="margin-top:12px;border-color:var(--acc2)"><h5>Launched</h5><p style="margin:0 0 8px"><b>${esc(name)}</b> <span style="color:var(--dim)">$${esc(symbol)}</span></p>
+      <div class="mono" style="font-size:12px;word-break:break-all">${esc(token || "")}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px"><a class="btn sm" href="https://ponsfamily.com/launchpad/${esc(token)}" target="_blank" rel="noopener">Open on Pons ↗</a>
+      <a class="btn sm ghost" href="${EXPLORER}tx/${esc(tx.hash)}" target="_blank" rel="noopener">Transaction ↗</a><a class="btn sm ghost" href="#" data-scan="${esc(token)}">Scan it</a><a class="btn sm ghost" href="#app" data-open="fees">Claim its fees later</a></div></div>`;
+    lpBalWei = await lpRead.getBalance(acc).catch(() => lpBalWei); lpSummary();
+  } catch (e) { lpMsg(e.shortMessage || e.info?.error?.message || e.message, "bad"); }
+  finally { $("lpGo").disabled = false; }
+});
+document.querySelector('#tabs button[data-t="launch"]').addEventListener("click", () => lpBoot());
+if (location.hash === "#launch") lpBoot();
+
+</script>
+</body>
+</html>

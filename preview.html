@@ -3,17 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Signal Agent — most launches are noise</title>
+<title>Signal Agent — map the noise, name the signal</title>
 <meta name="description" content="Signal Agent reads every Pons launch on Robinhood Chain. Most launches are noise; it finds the signal.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://oculaagent.com/">
+<meta property="og:url" content="https://signalaiagent.com/">
 <meta property="og:title" content="Signal Agent">
 <meta property="og:description" content="Most launches are noise. Signal Agent finds the signal.">
-<meta property="og:image" content="https://oculaagent.com/og.png">
+<meta property="og:image" content="https://signalaiagent.com/og.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:site" content="@oculaagent">
-<meta name="twitter:creator" content="@oculaagent">
-<meta name="twitter:image" content="https://oculaagent.com/og.png">
+<meta name="twitter:site" content="@signalagentai">
+<meta name="twitter:creator" content="@signalagentai">
+<meta name="twitter:image" content="https://signalaiagent.com/og.png">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -238,6 +238,57 @@ body.holder .ws .lock{display:none}
 
 /* nav over the black tools section */
 body.scrolled .nav{box-shadow:0 1px 0 var(--line)}
+
+/* ===== Atlas: the map of Pons. Every launch is a star; only the ones that shine get a name. ===== */
+html{scroll-behavior:auto}
+#atlas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;touch-action:pan-y}
+#labels{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.lb{position:absolute;left:0;top:0;transform:translate(10px,-50%);font:500 11.5px var(--mono);letter-spacing:.04em;white-space:nowrap;color:var(--text);will-change:transform,opacity}
+.lb.sig{font:600 13px var(--sans);letter-spacing:-.01em}
+.lb.sig::before{content:"";position:absolute;left:-14px;top:50%;width:10px;height:1px;background:currentColor}
+.lb.no{color:var(--dim)}
+.lb.hot{font-size:19px;padding:4px 10px;margin-left:6px;border:1px solid var(--text);border-radius:4px;background:var(--raise)}
+.lb.hot::after{content:attr(data-why);display:block;font:400 11px var(--mono);letter-spacing:.02em;color:var(--dim);margin-top:2px}
+main,footer{position:relative;z-index:1}
+/* hero: the globe sits far right, the conversation on the left */
+.hero{background:transparent}
+.hero::after{display:none}
+.veil{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,var(--bg) 18%,rgba(245,243,236,.7) 38%,rgba(245,243,236,0) 58%),linear-gradient(0deg,var(--bg),rgba(245,243,236,0) 22%)}
+.dive{position:absolute;inset:0;z-index:2;display:grid;place-content:center;text-align:center;pointer-events:none;opacity:0}
+.dive p{margin:0;font:400 clamp(34px,4.6vw,68px)/1.05 var(--sans);letter-spacing:-.05em}
+.dive p span{color:var(--faint)}
+.fieldcap{z-index:3}
+/* solid sections slide over the map; how and token let it show */
+.band{background:var(--bg);padding-bottom:140px}
+.tape{position:relative}
+/* how: pinned, three steps, the globe does the explaining */
+.how{padding:0;height:100svh;min-height:640px}
+.hw{height:100%;display:flex;align-items:center}
+.hp{max-width:500px;padding:34px 36px;border-radius:18px;background:rgba(245,243,236,.8);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line)}
+.hp h2 span,.token h2 span{color:var(--faint)}
+.hsteps{display:grid;gap:6px;margin-top:34px}
+.hs{padding:16px 18px;border-radius:10px;border:1px solid transparent;opacity:.35;transition:all .6s var(--ease)}
+.hs b{display:block;font:500 17px var(--sans);letter-spacing:-.02em}.hs span{font-size:14.5px;color:var(--dim)}
+.hs .n{display:block;font:400 11px var(--mono);letter-spacing:.14em;margin-bottom:4px;color:var(--faint)}
+.hs.on{opacity:1;border-color:var(--line2);background:var(--raise)}
+.meter{height:2px;background:var(--line);margin-top:22px}.meter i{display:block;height:100%;background:var(--text);transform-origin:left;transform:scaleX(0)}
+.tools{margin-top:0}
+/* token: the page ends on the map it began with */
+.token{padding:0;min-height:100svh;display:flex;align-items:center}
+.tk2{width:100%}
+.tc{max-width:520px;padding:40px 0}
+.tc .facts{margin-top:44px}
+footer{margin-top:0;background:var(--bg)}
+/* word masks: room on every side so tight tracking never clips a glyph; colour follows the line, not the mask */
+.sp{display:inline-block;overflow:hidden;vertical-align:top;padding:0 .08em .1em;margin:0 -.08em}.sp>span{display:inline-block}
+.hero h1 .sp,.hero h1 .sp>span,.hp h2 .sp,.hp h2 .sp>span,.token h2 .sp,.token h2 .sp>span{color:inherit}
+@media (max-width:1000px){
+  .veil{background:linear-gradient(0deg,var(--bg) 40%,rgba(245,243,236,.55) 68%,rgba(245,243,236,0))}
+  .hw{align-items:flex-end;padding-bottom:70px}.hp{padding:24px 22px}.hsteps{margin-top:20px}.hs{padding:12px 14px}
+  .tc{background:rgba(245,243,236,.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:28px 22px;border-radius:16px;margin-top:40svh}
+  .token{align-items:flex-end;padding-bottom:40px}
+  .lb.no{display:none}
+}
 
 /* ===== workspace window: the same tools in every design, always a dark instrument ===== */
 .ws{--bg:#161514;--text:#F5F3EC;--mid:#aaa59c;--dim:#7a766f;--line:rgba(245,243,236,.09);--line2:rgba(245,243,236,.16);--panel:rgba(28,27,25,.9);
@@ -548,23 +599,25 @@ body.scrolled .nav{box-shadow:0 1px 0 var(--line)}
 <body>
 
 <header class="nav"><div class="wrap">
-  <a class="brand" href="#top" id="home"><svg class="glyph" viewBox="20 30 216 196" aria-hidden="true"><path d="M226 50H128a39 39 0 0 0 0 78a39 39 0 0 1 0 78H30" fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>signal</b> agent</span></a>
-  <nav><a href="#band">Signal</a><a href="#how">How it works</a><a href="#tools">Tools</a><a href="#token">Token</a></nav>
+  <a class="brand" href="#top" id="home"><svg class="glyph" viewBox="22 14 222 222" aria-hidden="true"><g><path d="M219.3 98.33A96 96 0 1 1 157.67 36.7" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round"/><ellipse cx="128" cy="128" rx="84" ry="28" transform="rotate(-18 128 128)" fill="none" stroke="currentColor" stroke-width="10"/><circle cx="195.88" cy="60.12" r="23" fill="currentColor"/></g></svg><span><b>signal</b> agent</span></a>
+  <nav><a href="#band">The map</a><a href="#how">How it works</a><a href="#tools">Tools</a><a href="#token">Token</a></nav>
   <div class="r">
-    <a class="ic" href="https://x.com/oculaagent" target="_blank" rel="noopener" aria-label="Signal on X"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+    <a class="ic" href="https://x.com/signalagentai" target="_blank" rel="noopener" aria-label="Signal on X"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
     <button class="btn line" type="button" id="holderBtn">Holder access</button>
     <a class="btn solid" id="buyNova" aria-disabled="true">Token · Soon</a>
   </div>
 </div></header>
 
+<canvas id="atlas" aria-hidden="true"></canvas><div id="labels" aria-hidden="true"></div>
 <main>
-  <section class="hero" id="top">
-    <canvas id="field" data-theme="light" aria-hidden="true"></canvas>
-    <div class="fieldcap"><span class="sc bl">One line per launch</span><span class="sc br"><b id="scSig">0</b> signal · <b id="scNoise">0</b> noise</span></div>
+  <section class="hero" id="top" data-sec="hero">
+    <div class="veil" aria-hidden="true"></div>
+    <div class="dive" aria-hidden="true"><p>Every launch is a star.</p><p><span>Only a few get a name.</span></p></div>
+    <div class="fieldcap"><span class="sc bl">Drag to turn the map</span><span class="sc br"><b id="scSig">0</b> signal · <b id="scNoise">0</b> noise</span></div>
     <div class="wrap hgrid">
       <div class="hl">
-        <p class="kick"><i></i>Receiving<span class="bk">&nbsp;· block <span id="nBlock">—</span></span>&nbsp;· <span id="nLaunch">—</span> launches today</p>
-        <h1>Most launches are noise.<br><span>Signal Agent finds the signal.</span></h1>
+        <p class="kick"><i></i>Charting<span class="bk">&nbsp;· block <span id="nBlock">—</span></span>&nbsp;· <span id="nLaunch">—</span> launches today</p>
+        <h1>Map the noise.<br><span>Name the signal.</span></h1>
         <div class="convo">
           <div class="thread" id="thread" aria-live="polite"></div>
           <form class="box" id="ask" autocomplete="off">
@@ -580,22 +633,25 @@ body.scrolled .nav{box-shadow:0 1px 0 var(--line)}
 
   <div class="tape" aria-label="Newest launches"><div class="tt" id="tape"></div></div>
 
-  <section class="band" id="band">
+  <section class="band" id="band" data-sec="band">
     <div class="wrap">
-      <div class="rv bh"><div><p class="kick plain">Live band</p><h2>Every launch, received.</h2></div><p class="tally"><b id="tRx">0</b> received <span>·</span> <b class="s" id="tSig">0</b> signal <span>·</span> <b id="tNoise">0</b> noise</p></div>
+      <div class="rv bh"><div><p class="kick plain">Newest on the map</p><h2>The newest stars.</h2></div><p class="tally"><b id="tRx">0</b> received <span>·</span> <b class="s" id="tSig">0</b> signal <span>·</span> <b id="tNoise">0</b> noise</p></div>
       <div class="rv rows" id="rows"></div>
       <p class="fine">Signal means every check passed: the dev still holds, tax is fair, socials are set, and new buyers keep arriving. Not advice.</p>
     </div>
   </section>
 
-  <section class="how" id="how">
-    <div class="wrap">
-      <p class="rv kick plain">How it works</p>
-      <h2 class="rv">Receive. Filter. Report.</h2>
-      <div class="rv steps">
-        <div><svg viewBox="0 0 120 40" aria-hidden="true"><path d="M0 20h20l4-12 6 24 6-30 6 34 6-26 5 18 4-8h63" fill="none" stroke="currentColor" stroke-width="1.2"/></svg><b>01 · Receive</b><p>Every Pons launch on Robinhood Chain, the block it happens.</p></div>
-        <div><svg viewBox="0 0 120 40" aria-hidden="true"><path d="M0 20c10-8 14 8 22 0s12-10 18 0 10 8 16 0" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".35"/><path d="M56 20h12M76 20c8-14 14-14 22 0s14 14 22 0" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M66 12v16" stroke="currentColor" stroke-width="1.2"/></svg><b>02 · Filter</b><p>Did the dev dump? Bundled wallets? A fake X? Are buyers still arriving?</p></div>
-        <div><svg viewBox="0 0 120 40" aria-hidden="true"><path d="M0 20h120" stroke="currentColor" stroke-width="1.2" opacity=".25"/><path d="M40 20c6-16 14-16 20 0s14 16 20 0" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="60" cy="20" r="2.4" fill="currentColor"/></svg><b>03 · Report</b><p>Signal or noise, with every reason, in plain words.</p></div>
+  <section class="how" id="how" data-sec="how">
+    <div class="wrap hw">
+      <div class="hp">
+        <p class="kick plain">How it works</p>
+        <h2>Map the noise.<br><span>Name the signal.</span></h2>
+        <div class="hsteps">
+          <div class="hs on"><span class="n">01</span><b>Chart</b><span>Every Pons launch on Robinhood Chain appears on the map the block it happens.</span></div>
+          <div class="hs"><span class="n">02</span><b>Measure</b><span>Did the dev dump? Bundled wallets? A fake X? Are buyers still arriving? Every star is measured.</span></div>
+          <div class="hs"><span class="n">03</span><b>Name</b><span>Only the ones that truly shine get a name, with every reason, in plain words.</span></div>
+        </div>
+        <div class="meter"><i></i></div>
       </div>
     </div>
   </section>
@@ -603,7 +659,7 @@ body.scrolled .nav{box-shadow:0 1px 0 var(--line)}
   <section class="tools inv" id="tools">
     <div class="wrap">
       <p class="rv kick plain">Tools</p>
-      <h2 class="rv">One receiver. Seven instruments.</h2>
+      <h2 class="rv">Seven instruments for the map.</h2>
       <div class="rv tgrid">
         <a href="#app" data-open="scan"><span>Scanner</span><small>A full report on any token: rug risk, bundles, X check.</small></a>
         <a href="#app" data-open="radar"><span>Launch Radar</span><small>Every new launch, filtered live.</small></a>
@@ -612,26 +668,28 @@ body.scrolled .nav{box-shadow:0 1px 0 var(--line)}
         <a href="#app" data-open="launch" class="free"><span>Pons Launchpad</span><small>Launch from your own wallet. Always free.</small></a>
         <a href="#app" data-open="kit"><span>Launch Kit</span><small>Lore, bio, thread and launch post, written for you.</small></a>
         <a href="#app" data-open="agent"><span>Agent Studio</span><small>Design the AI agent of your own token.</small></a>
-        <a href="#top" class="ask free-none" id="askCell"><span>Ask Signal →</span><small>Not sure where to start? Ask the receiver.</small></a>
+        <a href="#top" class="ask free-none" id="askCell"><span>Ask Signal →</span><small>Not sure where to start? Ask the map.</small></a>
       </div>
     </div>
   </section>
 
-  <section class="token" id="token">
-    <div class="rv wrap tk">
-      <div><p class="kick plain">Token</p><h2>Hold the signal.</h2><p class="lead">Hold 0.1% of the token supply and sign once with your wallet: every tool opens. Signing is free and sends nothing. The Pons Launchpad stays free for everyone.</p>
-        <div class="cta"><a class="btn solid lg" id="buy2" aria-disabled="true">Token · Soon</a><button class="btn line lg" type="button" data-unlock>Holder access</button></div></div>
-      <dl class="facts"><div><dt>Chain</dt><dd>Robinhood Chain</dd></div><div><dt>Launched on</dt><dd>Pons</dd></div><div><dt>Unlock</dt><dd>0.1% of supply</dd></div><div><dt>Contract</dt><dd><button type="button" id="caCopy" class="ca">—</button></dd></div></dl>
+  <section class="token" id="token" data-sec="token">
+    <div class="wrap tk2">
+      <div class="tc">
+        <p class="kick plain">Token</p><h2>Own a piece<br><span>of the map.</span></h2><p class="lead">Hold 0.1% of the token supply and sign once with your wallet: every tool opens. Signing is free and sends nothing. The Pons Launchpad stays free for everyone.</p>
+        <div class="cta"><a class="btn solid lg" id="buy2" aria-disabled="true">Token · Soon</a><button class="btn line lg" type="button" data-unlock>Holder access</button></div>
+        <dl class="facts"><div><dt>Ticker</dt><dd id="tkSym">—</dd></div><div><dt>Chain</dt><dd>Robinhood Chain</dd></div><div><dt>Launched on</dt><dd>Pons</dd></div><div><dt>Unlock</dt><dd>0.1% of supply</dd></div><div><dt>Contract</dt><dd><button type="button" id="caCopy" class="ca">—</button></dd></div></dl>
+      </div>
     </div>
   </section>
 </main>
 
 <footer class="inv">
   <div class="wrap fr">
-    <a class="brand" href="#top"><svg class="glyph" viewBox="20 30 216 196" aria-hidden="true"><path d="M226 50H128a39 39 0 0 0 0 78a39 39 0 0 1 0 78H30" fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>signal</b> agent</span></a>
-    <span class="links"><a href="https://x.com/oculaagent" target="_blank" rel="noopener">X</a><a href="#tools">Tools</a><a href="#token">Token</a></span>
+    <a class="brand" href="#top"><svg class="glyph" viewBox="22 14 222 222" aria-hidden="true"><g><path d="M219.3 98.33A96 96 0 1 1 157.67 36.7" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round"/><ellipse cx="128" cy="128" rx="84" ry="28" transform="rotate(-18 128 128)" fill="none" stroke="currentColor" stroke-width="10"/><circle cx="195.88" cy="60.12" r="23" fill="currentColor"/></g></svg><span><b>signal</b> agent</span></a>
+    <span class="links"><a href="https://x.com/signalagentai" target="_blank" rel="noopener">X</a><a href="#tools">Tools</a><a href="#token">Token</a></span>
   </div>
-  <div class="wrap fr small"><span>© 2026 Signal. Most launches are noise.</span><span>Not financial advice. On-chain data only.</span></div>
+  <div class="wrap fr small"><span>© 2026 Signal Agent. Map the noise, name the signal.</span><span>Not financial advice. On-chain data only.</span></div>
 </footer>
 
 <div class="drawer" id="drawer" hidden>
@@ -842,6 +900,8 @@ body.scrolled .nav{box-shadow:0 1px 0 var(--line)}
   <details id="mOwner"><summary>Owner? Use your studio key</summary><form id="ownerForm"><input id="ownerKey" type="password" placeholder="Studio key" autocomplete="current-password"><button class="btn solid" type="submit">Unlock</button></form></details>
 </div></div>
 
+<script src="/vendor/gsap.min.js"></script>
+<script src="/vendor/ScrollTrigger.min.js"></script>
 <script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.min.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
 <script type="module">
 // holder pass: sent with every request to this site (the server decides what it unlocks)
@@ -849,8 +909,8 @@ body.scrolled .nav{box-shadow:0 1px 0 var(--line)}
   const f = window.fetch.bind(window);
   window.fetch = (input, init = {}) => {
     const url = typeof input === "string" ? input : input.url, same = url.startsWith("/") || url.startsWith(location.origin);
-    let pass = null; try { pass = localStorage.getItem("ocula.pass"); } catch {}
-    if (same && pass) { const h = new Headers(init.headers || (typeof input !== "string" ? input.headers : undefined)); h.set("x-ocula-pass", pass); init = { ...init, headers: h }; }
+    let pass = null; try { pass = localStorage.getItem("signal.pass"); } catch {}
+    if (same && pass) { const h = new Headers(init.headers || (typeof input !== "string" ? input.headers : undefined)); h.set("x-signal-pass", pass); init = { ...init, headers: h }; }
     return f(input, init);
   };
 })();
@@ -1046,7 +1106,7 @@ document.addEventListener("click", (e) => { if (e.target.closest("[data-unlock]"
 async function unlockWith(body) {
   const r = await fetch("/api/auth", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }), j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(j.error || "Could not unlock.");
-  store.set("ocula.pass", j.pass); await refreshMe(); openModal();
+  store.set("signal.pass", j.pass); await refreshMe(); openModal();
 }
 el("mSign").addEventListener("click", async () => {
   el("mErr").textContent = "";
@@ -1061,12 +1121,17 @@ el("ownerForm").addEventListener("submit", async (e) => { e.preventDefault(); el
 refreshMe().then(() => { if (!me.holder && !TOOLS.includes(location.hash.slice(1))) document.querySelector('#tabs [data-t="launch"]')?.click(); });
 
 // buy buttons and the contract address once the token is set on the server
-fetch("/api/status").then((r) => r.json()).then((j) => {
+function buyButtons(tries = 0) { fetch("/api/status").then((r) => r.json()).then((j) => {
   if (!j.novaToken) return;
-  for (const id of ["buyNova", "buy2"]) { const b = el(id); b.textContent = "Buy token"; b.removeAttribute("aria-disabled"); b.href = "https://ponsfamily.com/launchpad/" + j.novaToken; b.target = "_blank"; b.rel = "noopener"; }
+  // the ticker comes from the chain; the server reads it in the background the first time
+  if (!j.tokenSymbol) { if (tries < 20) setTimeout(() => buyButtons(tries + 1), 2500); return; }
+  const sym = "$" + j.tokenSymbol;
+  if (el("tkSym")) el("tkSym").textContent = sym;
+  for (const id of ["buyNova", "buy2"]) { const b = el(id); b.textContent = "Buy " + sym; b.removeAttribute("aria-disabled"); b.href = "https://ponsfamily.com/launchpad/" + j.novaToken; b.target = "_blank"; b.rel = "noopener"; }
   const c = el("caCopy"); c.textContent = shortCa(j.novaToken); c.title = "Copy " + j.novaToken;
-  c.addEventListener("click", async () => { try { await navigator.clipboard.writeText(j.novaToken); c.textContent = "Copied"; setTimeout(() => (c.textContent = shortCa(j.novaToken)), 1400); } catch {} });
-}).catch(() => {});
+  if (!c.dataset.on) c.dataset.on = 1, c.addEventListener("click", async () => { try { await navigator.clipboard.writeText(j.novaToken); c.textContent = "Copied"; setTimeout(() => (c.textContent = shortCa(j.novaToken)), 1400); } catch {} });
+}).catch(() => {}); }
+buyButtons();
 
 // ---------- the live band: every launch as a line, signal bright, noise faint ----------
 function wave(r) {
@@ -1113,75 +1178,163 @@ paintBand = function (rows) {
   if (items) el("tape").innerHTML = items + items;
 };
 
-// ---------- the field: a calm 3D landscape of lines, one per launch. Noise stays flat and faint; signal rises in the cold accent ----------
+// ---------- Atlas: the map of Pons ----------
 import * as THREE from "three";
-import { Line2 } from "three/addons/lines/Line2.js";
-import { LineGeometry } from "three/addons/lines/LineGeometry.js";
-import { LineMaterial } from "three/addons/lines/LineMaterial.js";
-(() => {
-  const cv = document.getElementById("field"); if (!cv) return;
-  let renderer; try { renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true }); } catch { cv.remove(); return; }
-  const still = matchMedia("(prefers-reduced-motion: reduce)").matches, inScope = !!cv.closest(".scope");
-  renderer.setPixelRatio(Math.min(2, devicePixelRatio));
-  const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
-  const field = new THREE.Group(); scene.add(field);
-  const L = 44, P = 180, W = 16, D = 13;
-  const light = cv.dataset.theme === "light";
-  const SIG = new THREE.Color(light ? "#161514" : "#F5F3EC"), NOISE = new THREE.Color(light ? "#6B675F" : "#A39E94"), INT = new THREE.Color(light ? "#B5432E" : "#D9826E");
-  // each line: its data (signal strength, seed) and the geometry it drives
-  const lines = [];
-  for (let j = 0; j < L; j++) {
-    // fat lines (Line2): WebGL draws plain lines 1px wide, these take a width in pixels
-    const pos = new Float32Array(P * 3);
-    for (let i = 0; i < P; i++) pos[i * 3] = (i / (P - 1) - 0.5) * W;
-    const g = new LineGeometry(); g.setPositions(pos);
-    const m = new LineMaterial({ color: NOISE.clone(), transparent: true, opacity: 0.12, linewidth: 1 });
-    const line = new Line2(g, m); line.position.z = (j / (L - 1) - 0.5) * D; field.add(line);
-    lines.push({ line, g, m, pos, seg: g.attributes.instanceStart.data, seed: Math.random() * 100, amp: 0, ampTo: 0.08, peak: 0.55 + Math.random() * 0.3, kind: "noise" });
+{
+  const cv = document.getElementById("atlas"), box = document.getElementById("labels");
+  const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
+  renderer.setPixelRatio(Math.min(2, devicePixelRatio)); renderer.setClearColor(0xf5f3ec);
+  const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(34, 1, 0.01, 100);
+  const globe = new THREE.Group(); scene.add(globe);
+  const R = 2.25, INK = 0x161514;
+  const dotC = document.createElement("canvas"); dotC.width = dotC.height = 64; { const x = dotC.getContext("2d"); x.fillStyle = "#fff"; x.beginPath(); x.arc(32, 32, 30, 0, Math.PI * 2); x.fill(); }
+  const DOT = new THREE.CanvasTexture(dotC);
+  // dust: every other launch of the day, a faint point on the sphere
+  const N = 2600, p = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) { const y = 1 - (i / (N - 1)) * 2, r = Math.sqrt(1 - y * y), a = i * 2.399963; p.set([Math.cos(a) * r * R, y * R, Math.sin(a) * r * R], i * 3); }
+  const dg = new THREE.BufferGeometry(); dg.setAttribute("position", new THREE.BufferAttribute(p, 3));
+  const dust = new THREE.PointsMaterial({ color: INK, size: 0.03, map: DOT, alphaTest: 0.3, transparent: true, opacity: 0.5, depthWrite: false });
+  globe.add(new THREE.Points(dg, dust));
+  // meridians and the equator, like an atlas
+  const lm = new THREE.LineBasicMaterial({ color: INK, transparent: true, opacity: 0.12 }), eq = new THREE.LineBasicMaterial({ color: INK, transparent: true, opacity: 0.3 });
+  const ring = (rot) => new THREE.BufferGeometry().setFromPoints(new THREE.EllipseCurve(0, 0, R, R).getPoints(160).map((q) => (rot ? new THREE.Vector3(q.x, 0, q.y) : new THREE.Vector3(q.x, q.y, 0))));
+  for (let k = 0; k < 6; k++) { const l = new THREE.Line(ring(false), lm); l.rotation.y = (k / 6) * Math.PI; globe.add(l); }
+  globe.add(new THREE.Line(ring(true), eq));
+  // the deep field: what you fly through once you zoom into the map
+  const M = 2400, q = new Float32Array(M * 3);
+  for (let i = 0; i < M; i++) { const u = Math.random() * 2 - 1, a = Math.random() * Math.PI * 2, r = Math.cbrt(Math.random()) * R * 0.97, s = Math.sqrt(1 - u * u); q.set([Math.cos(a) * s * r, u * r, Math.sin(a) * s * r], i * 3); }
+  const qg = new THREE.BufferGeometry(); qg.setAttribute("position", new THREE.BufferAttribute(q, 3));
+  const deep = new THREE.PointsMaterial({ color: INK, size: 0.016, map: DOT, alphaTest: 0.3, transparent: true, opacity: 0, depthWrite: false });
+  globe.add(new THREE.Points(qg, deep));
+  // the measuring ring: sweeps the globe in step 02
+  const scan = new THREE.Mesh(new THREE.TorusGeometry(1, 0.006, 8, 200), new THREE.MeshBasicMaterial({ color: INK, transparent: true, opacity: 0 }));
+  scan.rotation.x = Math.PI / 2; scene.add(scan);
+
+  // stars: the newest launches, placed by their address; signal ones are bright and named
+  const stars = []; let key = "";
+  function place(rows) {
+    const list = rows.length >= 8 ? rows.slice(0, 22) : [...rows, ...DEMO_STARS.slice(0, 14 - rows.length)];
+    const k = list.map((r) => r.token + r.pass).join();
+    if (k === key) return; key = k;
+    stars.forEach((s) => { globe.remove(s.m); s.el.remove(); }); stars.length = 0;
+    list.forEach((r, i) => {
+      const h = parseInt(r.token.slice(2, 10), 16) || i * 7919, u = (h % 1000) / 1000, v = ((h >>> 10) % 1000) / 1000;
+      const th = u * Math.PI * 2, ph = Math.acos(2 * v - 1) * 0.8 + 0.3, pos = new THREE.Vector3(Math.sin(ph) * Math.cos(th), Math.cos(ph), Math.sin(ph) * Math.sin(th)).multiplyScalar(R * 1.01);
+      const m = new THREE.Mesh(new THREE.SphereGeometry(r.pass ? 0.075 : 0.035, 16, 16), new THREE.MeshBasicMaterial({ color: r.pass ? INK : 0x8a857b }));
+      m.position.copy(pos); globe.add(m);
+      const el = document.createElement("div"); el.className = "lb " + (r.pass ? "sig" : "no"); el.textContent = (r.pass ? "$" : "") + r.symbol + (r.pass ? "  · signal" : "");
+      const why = r.checks?.find((c) => /grow/.test(c.text))?.text || "every check passed"; el.dataset.why = trim2(why);
+      box.appendChild(el); stars.push({ m, el, r, born: -9 });
+    });
   }
-  window.field = {
-    set(rows) {
-      // newest launches sit closest to the viewer
-      lines.forEach((o, j) => {
-        const r = rows[L - 1 - j];
-        o.kind = !r ? "noise" : r.pass ? "sig" : r.devRugged ? "int" : "noise";
-        o.ampTo = o.kind === "sig" ? 1 : o.kind === "int" ? 0.28 : 0.1;
-        if (r) o.seed = parseInt(r.token.slice(2, 8), 16) % 1000 / 10;
-      });
-      if (still) frame(0);
-    },
-  };
-  const look = { x: 0, y: 0 }, cur = { x: 0, y: 0 };
-  addEventListener("pointermove", (e) => { look.x = e.clientX / innerWidth - 0.5; look.y = e.clientY / innerHeight - 0.5; }, { passive: true });
-  function size() { const w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return; renderer.setSize(w, h, false); lines.forEach((o) => o.m.resolution.set(w, h)); cam.aspect = w / h; cam.updateProjectionMatrix(); const narrow = w < 800; if (inScope) { cam.position.set(0, 8.2, 17); cam.lookAt(0, -0.4, 0.6); field.position.x = 0; return; } cam.position.set(narrow ? 0 : -2.2, 5.2, 13.5); cam.lookAt(narrow ? 0 : -2.2, 0, 0); field.position.x = narrow ? 0 : 3.6; }
-  new ResizeObserver(size).observe(cv); size();
-  let visible = true; new IntersectionObserver(([e]) => (visible = e.isIntersecting)).observe(cv);
-  const clock = new THREE.Clock();
-  function frame(dt) {
-    const t = clock.elapsedTime;
-    cur.x += (look.x - cur.x) * 0.03; cur.y += (look.y - cur.y) * 0.03;
-    field.rotation.y = -0.18 + cur.x * 0.12; field.rotation.x = cur.y * 0.05;
-    for (const o of lines) {
-      o.amp += (o.ampTo - o.amp) * Math.min(1, dt * 1.5 || 1);
-      const a = o.pos, col = o.kind === "sig" ? SIG : o.kind === "int" ? INT : NOISE;
-      o.m.color.lerp(col, 0.05); o.m.opacity += ((o.kind === "sig" ? 1 : o.kind === "int" ? 0.55 : inScope ? 0.3 : light ? 0.34 : 0.16) - o.m.opacity) * 0.05;
-      for (let i = 0; i < P; i++) {
-        const u = i / (P - 1);
-        const base = Math.sin(u * 9 + t * 0.35 + o.seed) * 0.05 + Math.sin(u * 23 - t * 0.6 + o.seed * 2) * 0.03;
-        const bump = Math.exp(-Math.pow((u - o.peak) * 7, 2)) * (Math.sin(u * 60 - t * 1.4) * 0.35 + 0.65);
-        a[i * 3 + 1] = base * (1 + o.amp) + bump * o.amp * (inScope || light ? 2.2 : 1.5) + (o.kind === "int" ? Math.sin(u * 140 + t * 3 + o.seed) * 0.06 : 0);
-      }
-      // copy the points into the line's segment buffer: [start xyz, end xyz] per segment
-      const sa = o.seg.array;
-      for (let i = 0; i < P - 1; i++) { sa.set(a.subarray(i * 3, i * 3 + 6), i * 6); }
-      o.seg.needsUpdate = true;
-      o.m.linewidth += ((o.kind === "sig" ? 4 : o.kind === "int" ? 1.8 : 1.15) - o.m.linewidth) * 0.08;
-    }
+  const DEMO_STARS = ["MBULL", "KABU", "PUPKINU", "FREE", "LOBSTERC", "GLWA", "AVON", "WORM", "ZETA", "NOAN", "CAPY", "HUSH", "TRACER", "ORBIX"].map((s, i) => ({ symbol: s, token: "0x" + ((i + 7) * 2654435761 >>> 0).toString(16).padStart(8, "0"), pass: i % 5 === 1, checks: [] }));
+  place([]);
+  window.field = { set: place };
+
+  // drag to turn the map (hero and token only, never over the controls)
+  let drag = null, dragV = 0;
+  addEventListener("pointerdown", (e) => { if (!/hero|token/.test(mode) || e.target.closest("a,button,textarea,input,.convo,.nav,.tc,.drawer,.modal")) return; drag = e.clientX; });
+  addEventListener("pointermove", (e) => { if (drag == null) return; dragV = (e.clientX - drag) * 0.005; drag = e.clientX; globe.rotation.y += dragV; }, { passive: true });
+  addEventListener("pointerup", () => (drag = null));
+
+  const mob = () => innerWidth < 1000;
+  function size() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }
+  addEventListener("resize", size); size();
+
+  // ---------- scroll: zoom into the map, back out to measure, name one star, end where it began ----------
+  let mode = "hero", hp = 0, stepN = 0, stepP = 0, focus = null;
+  const S = { gx: 3.1, gy: 0, z: 10, cy: 1.1, spin: 0.0016, labels: 1, lines: 1, deep: 0, dust: 0.5, scan: 0 };
+  const cur = { ...S };
+  const ease = (x) => 1 - Math.pow(1 - x, 3), sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  function targets() {
+    const m = mob(), step = Math.max(0, stepN);
+    if (mode === "hero") {
+      const a = ease(Math.min(1, hp / 0.55)), b = Math.pow(Math.max(0, (hp - 0.5) / 0.5), 1.6);
+      Object.assign(S, { gx: (m ? 0 : 3.1) * (1 - a), gy: (m ? 1.25 : 0) * (1 - a), z: hp < 0.5 ? 10 - 5.4 * a : 4.6 - 4.25 * b, cy: 1.1 * (1 - a), spin: 0.0016 + hp * 0.006,
+        labels: 1 - sstep(0.3, 0.55, hp), lines: 1 - sstep(0.55, 0.85, hp), deep: sstep(0.45, 0.9, hp) * 0.55, dust: 0.5 - sstep(0.6, 0.95, hp) * 0.3, scan: 0 });
+    } else if (mode === "band") Object.assign(S, { gx: 0, gy: 0, z: 0.35, cy: 0, spin: 0.004, labels: 0, lines: 0, deep: 0.55, dust: 0.2, scan: 0 });
+    else if (mode === "how") Object.assign(S, { gx: m ? 0 : [2.3, 2.3, 1.7][step], gy: m ? 2.4 : 0, z: m ? [13, 12, 10][step] : [12, 9, 7][step], cy: [1.6, 0.9, 0.5][step], spin: [0.014, 0.003, 0][step], labels: 1, lines: 1, deep: 0, dust: [0.55, 0.3, 0.35][step], scan: step === 1 ? 0.55 : 0 });
+    else if (mode === "token") Object.assign(S, { gx: m ? 0 : 3.1, gy: m ? 1.4 : 0, z: 10.5, cy: 1.1, spin: 0.0018, labels: 1, lines: 1, deep: 0, dust: 0.5, scan: 0 });
+  }
+  const v = new THREE.Vector3(), n = new THREE.Vector3(), toCam = new THREE.Vector3(), clock = new THREE.Clock();
+  renderer.setAnimationLoop(() => {
+    const t = clock.getElapsedTime(); targets();
+    for (const k in S) cur[k] += (S[k] - cur[k]) * (k === "z" && mode === "hero" ? 0.2 : 0.07);
+    globe.position.set(cur.gx, cur.gy, 0);
+    cam.position.set(0, cur.cy, cur.z); cam.lookAt(0, cur.cy * 0.3 + cur.gy * 0.4, cur.z - 10);
+    if (mode === "how" && stepN === 2 && focus) {
+      // turn the globe so the named star faces us
+      const lp = focus.m.position, want = Math.atan2(-cur.gx, cur.z) - Math.atan2(lp.x, lp.z);
+      let d = ((want - globe.rotation.y) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI; globe.rotation.y += d * 0.06;
+      globe.rotation.x += ((Math.asin(Math.max(-1, Math.min(1, lp.y / R))) * 0.6) - globe.rotation.x) * 0.05;
+    } else { if (drag == null) { globe.rotation.y += cur.spin + dragV; dragV *= 0.94; } globe.rotation.x += (0 - globe.rotation.x) * 0.05; }
+    lm.opacity = 0.12 * cur.lines; eq.opacity = 0.3 * cur.lines; deep.opacity = cur.deep; dust.opacity = cur.dust;
+    // the ring sweeps up and down the globe
+    const la = Math.sin(t * 1.1) * 1.15; scan.position.set(cur.gx, cur.gy + Math.sin(la) * R, 0); scan.scale.setScalar(Math.cos(la) * R * 1.03 + 0.001); scan.material.opacity = cur.scan;
+    stars.forEach((s, i) => {
+      const k = Math.min(1, Math.max(0, (t - s.born) / 0.7)), pop = s.born < 0 ? 1 : 1 + 2.70158 * Math.pow(k - 1, 3) + 1.70158 * Math.pow(k - 1, 2);
+      s.m.scale.setScalar(Math.max(0.001, pop * (s === focus && stepN === 2 && mode === "how" ? 1.6 : 1)));
+      s.m.getWorldPosition(v); n.copy(v).sub(globe.position).normalize(); toCam.copy(cam.position).sub(v).normalize();
+      const front = n.dot(toCam) > 0.05 && cur.z > R + 0.3, measured = mode === "how" && stepN === 1 ? (Math.abs(v.y - scan.position.y) < 0.35 ? 1 : 0.35) : 1;
+      // keep the label clear of the dot: its on-screen radius grows as the camera closes in
+      const px = (s.m.geometry.parameters.radius * s.m.scale.x) / cam.position.distanceTo(v) / Math.tan((cam.fov * Math.PI) / 360) * (innerHeight / 2);
+      v.project(cam);
+      s.el.style.transform = `translate(${((v.x * 0.5 + 0.5) * innerWidth + px + (s.r.pass ? 22 : 10)).toFixed(1)}px,${((-v.y * 0.5 + 0.5) * innerHeight).toFixed(1)}px) translateY(-50%)`;
+      const hide = mode === "how" && stepN === 2 && focus && s !== focus && !s.r.pass;
+      s.el.style.opacity = front && !hide ? (s.r.pass ? 1 : 0.5) * cur.labels * measured * Math.min(1, pop) : 0;
+    });
     renderer.render(scene, cam);
+  });
+
+  // ---------- GSAP: the zoom, the reveals, the pinned steps ----------
+  gsap.registerPlugin(ScrollTrigger);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const split = (h) => (h.innerHTML = h.innerHTML.split(/(<br>|<span>|<\/span>|\s+)/).map((w) => (!w || /^\s+$/.test(w) || /^<\/?(br|span)>$/.test(w) ? w : `<span class="sp"><span>${w}</span></span>`)).join(""));
+  $$(".hero h1, .how h2, .token h2").forEach(split);
+  $$(".how h2, .token h2").forEach((h) => h.classList.remove("rv"));
+  if (!REDUCE) {
+    gsap.from(".hero h1 .sp>span", { yPercent: 110, duration: 1.3, ease: "expo.out", stagger: 0.06, delay: 0.1 });
+    gsap.from([".hero .kick", ".hero .convo", ".fieldcap"], { y: 18, opacity: 0, duration: 1.2, ease: "expo.out", stagger: 0.1, delay: 0.45 });
+    // 1 · zoom into the map: the hero holds still while the camera dives through the globe
+    const tl = gsap.timeline({ scrollTrigger: { trigger: ".hero", start: "top top", end: "+=150%", pin: true, scrub: 0.6, onUpdate: (s) => (hp = s.progress) } });
+    tl.to(".hgrid", { y: -80, opacity: 0, filter: "blur(6px)", ease: "power2.in", duration: 0.35 }, 0)
+      .to([".fieldcap", ".veil"], { opacity: 0, duration: 0.3 }, 0)
+      .fromTo(".dive", { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.2, ease: "power2.out" }, 0.4)
+      .to(".dive", { opacity: 0, scale: 1.25, filter: "blur(8px)", duration: 0.2, ease: "power2.in" }, 0.8)
+      .to({}, { duration: 0 }, 1);
+    // 2 · the newest stars slide up over the field
+    gsap.from(".band .bh", { y: 50, opacity: 0, duration: 1.2, ease: "expo.out", scrollTrigger: { trigger: ".band", start: "top 80%", once: true } });
+    // 3 · tools rise in a stagger, the token headline rises out of its mask
+    gsap.from(".tgrid a", { y: 40, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.06, scrollTrigger: { trigger: ".tgrid", start: "top 82%", once: true } });
+    gsap.from(".token h2 .sp>span", { yPercent: 110, duration: 1.2, ease: "expo.out", stagger: 0.05, scrollTrigger: { trigger: ".token", start: "top 60%", once: true } });
+    gsap.from([".tc .lead", ".tc .cta", ".tc .facts"], { y: 30, opacity: 0, duration: 1.1, ease: "expo.out", stagger: 0.1, scrollTrigger: { trigger: ".token", start: "top 55%", once: true } });
+    gsap.from(".how h2 .sp>span", { yPercent: 110, duration: 1.2, ease: "expo.out", stagger: 0.05, scrollTrigger: { trigger: ".how", start: "top 70%", once: true } });
   }
-  if (still) { frame(0); return; }
-  renderer.setAnimationLoop(() => { const dt = Math.min(0.05, clock.getDelta()); if (visible && !document.hidden) frame(dt); });
-})();
+  // 4 · how it works: pinned, the steps drive the globe
+  const hs = $$(".hs");
+  const howST = ScrollTrigger.create({ trigger: ".how", start: "top top", end: REDUCE ? "bottom top" : "+=240%", pin: !REDUCE, scrub: true, onUpdate: (s) => {
+    const i = Math.min(2, Math.floor(s.progress * 3));
+    if (i !== stepN) {
+      stepN = i;
+      if (i === 0) stars.forEach((st, k) => (st.born = clock.getElapsedTime() + k * 0.07));
+      if (i === 2) focus = stars.find((st) => st.r.pass) || stars[0];
+      stars.forEach((st) => st.el.classList.toggle("hot", i === 2 && st === focus));
+    }
+    hs.forEach((el, k) => el.classList.toggle("on", k === i)); document.querySelector(".meter i").style.transform = `scaleX(${s.progress})`;
+  } });
+  // which part of the page drives the map
+  const secs = ["hero", "band", "how", "tools", "token"].map((k) => [k, document.querySelector(`[data-sec="${k}"]`) || document.getElementById(k)]);
+  ScrollTrigger.create({ start: 0, end: "max", onUpdate: () => {
+    const mid = innerHeight * 0.5; let m = "hero";
+    for (const [k, el] of secs) { const r = (el.parentElement.classList.contains("pin-spacer") ? el.parentElement : el).getBoundingClientRect(); if (r.top < mid) m = k; }
+    if (m === "hero" && hp >= 0.999) m = "band";
+    if (m === "tools") m = "how";
+    if (m === "how" && mode !== "how" && !howST.isActive) stepN = -1;
+    mode = m;
+  } });
+  const fresh = () => ScrollTrigger.refresh();
+  addEventListener("load", fresh); document.fonts?.ready.then(fresh); setTimeout(fresh, 1500);
+}
 
 // ---------- tools ----------
 const $ = (id) => document.getElementById(id);

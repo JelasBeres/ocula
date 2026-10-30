@@ -60,6 +60,7 @@ def build(v, title, wm_fill):
     CSS = "\n".join([rd(H + v + ".css"), rd(H + "ws.css"), rd(H + "viz.css"), toolcss])
     if v in ("b", "d"): CSS = palette(CSS)
     if v == "e": CSS = rd(H + "e.css") + "\n" + palette_black("\n".join([rd(H + "ws.css"), rd(H + "viz.css"), toolcss]))
+    if v == "j": CSS = rd(H + "i.css") + "\n" + rd(H + "j.css") + "\n" + palette_black("\n".join([rd(H + "ws.css"), rd(H + "viz.css"), toolcss]))
     if v == "i": CSS = rd(H + "i.css") + "\n" + palette_black("\n".join([rd(H + "ws.css"), rd(H + "viz.css"), toolcss]))
     if v == "h": CSS = rd(H + "h.css") + "\n" + palette_black("\n".join([rd(H + "ws.css"), rd(H + "viz.css"), toolcss]))
     if v == "g": CSS = rd(H + "g.css") + "\n" + palette_black("\n".join([rd(H + "ws.css"), rd(H + "viz.css"), toolcss]))
@@ -67,12 +68,13 @@ def build(v, title, wm_fill):
     FONTS = ("family=Libre+Baskerville:ital,wght@0,400;0,700;1,400" if v == "e" else
              "family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700" if v == "f" else
              "family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500" if v == "g" else
-             "family=Inter+Tight:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500" if v in ("h", "i") else
+             "family=Inter+Tight:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500" if v in ("h", "i", "j") else
              "family=Big+Shoulders+Display:wght@600;800&family=Overpass:wght@400;600;700;800&family=Overpass+Mono:wght@400;600;700" if v == "d"
              else "family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500")
-    if v in ("d", "e", "f", "g", "h", "i"):   # no 3D stage: GSAP drives the page
+    if v in ("d", "e", "f", "g", "h", "i", "j"):   # no 3D stage: GSAP drives the page
         SCRIPTS = '<script src="/vendor/gsap.min.js"></script>\n<script src="/vendor/ScrollTrigger.min.js"></script>\n<script type="module">\n' + rd(H + "common.js") + (rd(H + "e.js") + rd(H + "f.js") if v == "f" else rd(H + v + ".js"))
         if v == "i": SCRIPTS = '<script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.min.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>\n<script type="module">\n' + rd(H + "common.js") + rd(H + "i.js") + rd(H + "h3d.js")
+        if v == "j": SCRIPTS = '<script src="/vendor/gsap.min.js"></script>\n<script src="/vendor/ScrollTrigger.min.js"></script>\n<script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.min.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>\n<script type="module">\n' + rd(H + "common.js") + rd(H + "i.js") + rd(H + "j.js")
         if v == "h": SCRIPTS = '<script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.min.js"}}</script>\n<script type="module">\n' + rd(H + "common.js") + rd(H + "h.js") + rd(H + "h3d.js")
         if v == "g": SCRIPTS = '<script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.min.js"}}</script>\n<script type="module">\n' + rd(H + "common.js") + rd(H + "g.js") + rd(H + "g3d.js")
     else:
@@ -85,14 +87,14 @@ def build(v, title, wm_fill):
 <title>{title}</title>
 <meta name="description" content="Signal Agent reads every Pons launch on Robinhood Chain. Most launches are noise; it finds the signal.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://oculaagent.com/">
+<meta property="og:url" content="https://signalaiagent.com/">
 <meta property="og:title" content="Signal Agent">
 <meta property="og:description" content="Most launches are noise. Signal Agent finds the signal.">
-<meta property="og:image" content="https://oculaagent.com/og.png">
+<meta property="og:image" content="https://signalaiagent.com/og.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:site" content="@oculaagent">
-<meta name="twitter:creator" content="@oculaagent">
-<meta name="twitter:image" content="https://oculaagent.com/og.png">
+<meta name="twitter:site" content="@signalagentai">
+<meta name="twitter:creator" content="@signalagentai">
+<meta name="twitter:image" content="https://signalaiagent.com/og.png">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">\n<link rel="icon" href="/favicon.ico" sizes="48x48">\n<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?{FONTS}&display=swap" rel="stylesheet">
@@ -101,7 +103,7 @@ def build(v, title, wm_fill):
 </style>
 </head>
 <body>
-{"" if v in ("d", "e", "f", "g", "h", "i") else '<canvas id="gl"></canvas>'}
+{"" if v in ("d", "e", "f", "g", "h", "i", "j") else '<canvas id="gl"></canvas>'}
 {body}
 {SCRIPTS}
 {TOOLS}
@@ -111,11 +113,11 @@ def build(v, title, wm_fill):
 """
     open(D + f"design-{v}.html", "w").write(page)
 
-    if v == "i": open(D + "preview.html", "w").write(page); open(D + "index.html", "w").write(page)  # Signal Agent is the live home page
+    if v == "j": open(D + "preview.html", "w").write(page); open(D + "index.html", "w").write(page)  # Atlas is the live home page
     # syntax check of the module script
     mod = page[page.index('<script type="module">') + len('<script type="module">'):page.rindex("</script>")]
     open(H + f"check-{v}.mjs", "w").write(mod)
     print("built design-" + v, len(page))
 
-for v, title, fill in [("a", "NOVA · Monolith", "#e8e7e3"), ("b", "NOVA Labs", "#F3F0E7"), ("c", "NOVA · Ceramic", "#efeeea"), ("d", "NOVA Departures", "#F3F0E7"), ("e", "Ocula — the AI agent that reads Pons", "#161514"), ("f", "Ocula — every launch gets a file", "#161514"), ("g", "Ocula — the AI agent that reads every Pons launch", "#F5F3EC"), ("h", "Ocula — most launches are noise", "#ECEDEF"), ("i", "Signal Agent — most launches are noise", "#161514")]:
+for v, title, fill in [("a", "NOVA · Monolith", "#e8e7e3"), ("b", "NOVA Labs", "#F3F0E7"), ("c", "NOVA · Ceramic", "#efeeea"), ("d", "NOVA Departures", "#F3F0E7"), ("e", "Ocula — the AI agent that reads Pons", "#161514"), ("f", "Ocula — every launch gets a file", "#161514"), ("g", "Ocula — the AI agent that reads every Pons launch", "#F5F3EC"), ("h", "Ocula — most launches are noise", "#ECEDEF"), ("i", "Signal Agent — most launches are noise", "#161514"), ("j", "Signal Agent — map the noise, name the signal", "#161514")]:
     if os.path.exists(H + v + ".html") and (len(sys.argv) < 2 or v in sys.argv[1:]): build(v, title, fill)

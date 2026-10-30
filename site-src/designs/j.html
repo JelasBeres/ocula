@@ -1,0 +1,107 @@
+<header class="nav"><div class="wrap">
+  <a class="brand" href="#top" id="home"><svg class="glyph" viewBox="22 14 222 222" aria-hidden="true"><g><path d="M219.3 98.33A96 96 0 1 1 157.67 36.7" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round"/><ellipse cx="128" cy="128" rx="84" ry="28" transform="rotate(-18 128 128)" fill="none" stroke="currentColor" stroke-width="10"/><circle cx="195.88" cy="60.12" r="23" fill="currentColor"/></g></svg><span><b>signal</b> agent</span></a>
+  <nav><a href="#band">The map</a><a href="#how">How it works</a><a href="#tools">Tools</a><a href="#token">Token</a></nav>
+  <div class="r">
+    <a class="ic" href="https://x.com/signalagentai" target="_blank" rel="noopener" aria-label="Signal on X"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+    <button class="btn line" type="button" id="holderBtn">Holder access</button>
+    <a class="btn solid" id="buyNova" aria-disabled="true">Token · Soon</a>
+  </div>
+</div></header>
+
+<canvas id="atlas" aria-hidden="true"></canvas><div id="labels" aria-hidden="true"></div>
+<main>
+  <section class="hero" id="top" data-sec="hero">
+    <div class="veil" aria-hidden="true"></div>
+    <div class="dive" aria-hidden="true"><p>Every launch is a star.</p><p><span>Only a few get a name.</span></p></div>
+    <div class="fieldcap"><span class="sc bl">Drag to turn the map</span><span class="sc br"><b id="scSig">0</b> signal · <b id="scNoise">0</b> noise</span></div>
+    <div class="wrap hgrid">
+      <div class="hl">
+        <p class="kick"><i></i>Charting<span class="bk">&nbsp;· block <span id="nBlock">—</span></span>&nbsp;· <span id="nLaunch">—</span> launches today</p>
+        <h1>Map the noise.<br><span>Name the signal.</span></h1>
+        <div class="convo">
+          <div class="thread" id="thread" aria-live="polite"></div>
+          <form class="box" id="ask" autocomplete="off">
+            <textarea id="askIn" rows="1" placeholder="Ask Signal, or paste a token CA" aria-label="Message Signal"></textarea>
+            <button class="send" id="send" type="submit" aria-label="Send" disabled><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </form>
+          <div class="under"><span class="hint" id="hint">On-chain data only. Signal never asks for your keys.</span>
+            <span class="asks"><button type="button" data-ask="What is a real signal on Pons right now?">What's a signal now?</button><button type="button" data-ask="Which new launches are noise or traps, and why?">What's noise?</button></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="tape" aria-label="Newest launches"><div class="tt" id="tape"></div></div>
+
+  <section class="band" id="band" data-sec="band">
+    <div class="wrap">
+      <div class="rv bh"><div><p class="kick plain">Newest on the map</p><h2>The newest stars.</h2></div><p class="tally"><b id="tRx">0</b> received <span>·</span> <b class="s" id="tSig">0</b> signal <span>·</span> <b id="tNoise">0</b> noise</p></div>
+      <div class="rv rows" id="rows"></div>
+      <p class="fine">Signal means every check passed: the dev still holds, tax is fair, socials are set, and new buyers keep arriving. Not advice.</p>
+    </div>
+  </section>
+
+  <section class="how" id="how" data-sec="how">
+    <div class="wrap hw">
+      <div class="hp">
+        <p class="kick plain">How it works</p>
+        <h2>Map the noise.<br><span>Name the signal.</span></h2>
+        <div class="hsteps">
+          <div class="hs on"><span class="n">01</span><b>Chart</b><span>Every Pons launch on Robinhood Chain appears on the map the block it happens.</span></div>
+          <div class="hs"><span class="n">02</span><b>Measure</b><span>Did the dev dump? Bundled wallets? A fake X? Are buyers still arriving? Every star is measured.</span></div>
+          <div class="hs"><span class="n">03</span><b>Name</b><span>Only the ones that truly shine get a name, with every reason, in plain words.</span></div>
+        </div>
+        <div class="meter"><i></i></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tools inv" id="tools">
+    <div class="wrap">
+      <p class="rv kick plain">Tools</p>
+      <h2 class="rv">Seven instruments for the map.</h2>
+      <div class="rv tgrid">
+        <a href="#app" data-open="scan"><span>Scanner</span><small>A full report on any token: rug risk, bundles, X check.</small></a>
+        <a href="#app" data-open="radar"><span>Launch Radar</span><small>Every new launch, filtered live.</small></a>
+        <a href="#app" data-open="snipe"><span>Sniper</span><small>Manual, or let the agent buy the signal.</small></a>
+        <a href="#app" data-open="fees"><span>Fee Claimer</span><small>Creator fees from one wallet or 200 accounts.</small></a>
+        <a href="#app" data-open="launch" class="free"><span>Pons Launchpad</span><small>Launch from your own wallet. Always free.</small></a>
+        <a href="#app" data-open="kit"><span>Launch Kit</span><small>Lore, bio, thread and launch post, written for you.</small></a>
+        <a href="#app" data-open="agent"><span>Agent Studio</span><small>Design the AI agent of your own token.</small></a>
+        <a href="#top" class="ask free-none" id="askCell"><span>Ask Signal →</span><small>Not sure where to start? Ask the map.</small></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="token" id="token" data-sec="token">
+    <div class="wrap tk2">
+      <div class="tc">
+        <p class="kick plain">Token</p><h2>Own a piece<br><span>of the map.</span></h2><p class="lead">Hold 0.1% of the token supply and sign once with your wallet: every tool opens. Signing is free and sends nothing. The Pons Launchpad stays free for everyone.</p>
+        <div class="cta"><a class="btn solid lg" id="buy2" aria-disabled="true">Token · Soon</a><button class="btn line lg" type="button" data-unlock>Holder access</button></div>
+        <dl class="facts"><div><dt>Ticker</dt><dd id="tkSym">—</dd></div><div><dt>Chain</dt><dd>Robinhood Chain</dd></div><div><dt>Launched on</dt><dd>Pons</dd></div><div><dt>Unlock</dt><dd>0.1% of supply</dd></div><div><dt>Contract</dt><dd><button type="button" id="caCopy" class="ca">—</button></dd></div></dl>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="inv">
+  <div class="wrap fr">
+    <a class="brand" href="#top"><svg class="glyph" viewBox="22 14 222 222" aria-hidden="true"><g><path d="M219.3 98.33A96 96 0 1 1 157.67 36.7" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round"/><ellipse cx="128" cy="128" rx="84" ry="28" transform="rotate(-18 128 128)" fill="none" stroke="currentColor" stroke-width="10"/><circle cx="195.88" cy="60.12" r="23" fill="currentColor"/></g></svg><span><b>signal</b> agent</span></a>
+    <span class="links"><a href="https://x.com/signalagentai" target="_blank" rel="noopener">X</a><a href="#tools">Tools</a><a href="#token">Token</a></span>
+  </div>
+  <div class="wrap fr small"><span>© 2026 Signal Agent. Map the noise, name the signal.</span><span>Not financial advice. On-chain data only.</span></div>
+</footer>
+
+<div class="drawer" id="drawer" hidden>
+  <div class="dhead"><span><b id="dTitle">Tools</b></span><button type="button" class="ic" id="dClose" aria-label="Close tools">×</button></div>
+  <div class="dbody" id="app">{{WS}}</div>
+</div>
+
+<div class="modal" id="modal" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <button class="x" type="button" id="mClose" aria-label="Close">×</button>
+  <h3 id="mTitle">Holder access</h3>
+  <p id="mText"></p>
+  <button class="btn solid lg" type="button" id="mSign" hidden>Connect wallet &amp; sign</button>
+  <p class="merr" id="mErr"></p>
+  <details id="mOwner"><summary>Owner? Use your studio key</summary><form id="ownerForm"><input id="ownerKey" type="password" placeholder="Studio key" autocomplete="current-password"><button class="btn solid" type="submit">Unlock</button></form></details>
+</div></div>

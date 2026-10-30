@@ -1,0 +1,332 @@
+===== 00 · profil =====
+Display name: Signal Agent
+
+Bio:
+Every Pons launch on Robinhood Chain, charted. Only the signal gets a name.
+
+Link: signalaiagent.com
+
+Foto profil: 00-avatar.png · Header: 00-banner.png
+
+
+===== 01-intro (video, pin) =====
+Meet Signal Agent.
+
+Every Pons launch on Robinhood Chain is a star on the map. Signal Agent charts every one, the block it happens.
+
+Most stay dust. Only the signal gets a name.
+
+signalaiagent.com
+
+
+===== 02-lore =====
+Every launch is a star.
+Only a few get a name.
+
+
+===== 03-how (video) =====
+How Signal Agent reads Pons:
+
+01 Chart: every launch appears on the map the block it happens.
+02 Measure: did the dev dump? Bundled wallets? A fake X? Are buyers still arriving?
+03 Name: only what passes every check gets a name, with every reason.
+
+
+===== 04-dust =====
+Most stars stay dust. Here is why:
+
+· The dev sold the whole bag
+· Bundled wallets bought the supply at launch
+· A fake or empty X account
+· New buyers stopped arriving
+
+Signal Agent checks every one, on every launch.
+
+
+===== 05-signal (video) =====
+A name is earned.
+
+The dev still holds. No bundled wallets. A fair creator tax. A real X account. New buyers still arriving.
+
+Miss one, and the star stays dust.
+
+
+===== 06-stats =====
+1,059 Pons launches charted today.
+
+Of the 6 newest, 4 devs had already sold the whole bag. 1 passed every check.
+
+Most will never get a name.
+
+
+===== 07-ask =====
+Paste any CA. Get a reading.
+
+Ask Signal about any Pons token and it tells you what the chain shows, in plain words: dev, bundles, buyers, X.
+
+signalaiagent.com
+
+
+===== 08-tools =====
+Seven instruments for the map:
+
+Scanner · Launch Radar · Sniper · Fee Claimer · Pons Launchpad · Launch Kit · Agent Studio
+
+The Launchpad is free for everyone. Holders open the rest.
+
+
+===== 09-domain =====
+Where the map lives: signalaiagent.com
+
+
+===== 10-token =====
+Own a piece of the map.
+
+Hold 0.1% of the supply and sign once with your wallet: every tool opens. Signing is free and sends nothing.
+
+CA: 0xDDEC469bd035fB42Db868367D50E059Afdd53892
+
+
+########## BATCH 2 ##########
+
+===== 11-live (PNG untuk post CA) =====
+Signal Agent is live on Pons.
+
+Every launch on Robinhood Chain, charted. Only the signal gets a name.
+
+CA: 0xDDEC469bd035fB42Db868367D50E059Afdd53892
+
+signalaiagent.com
+
+
+===== 12-zoom (video) =====
+Every launch is a star.
+Only a few get a name.
+
+signalaiagent.com
+
+
+===== 13-checks =====
+Four questions on every Pons launch, the block it happens:
+
+The dev: did they sell the whole bag?
+The bundles: did a few wallets buy the supply at launch?
+The X: is there a real account behind it?
+The buyers: are new ones still arriving?
+
+
+===== 14-growth =====
+Not how many. How fast.
+
+20 buyers in 10 minutes, still arriving: signal.
+43 buyers, none new in 15 minutes: dust.
+
+The radar ranks by growth, not by a fixed count.
+
+
+===== 15-pulse (video) =====
+Over 1,000 Pons launches today. A new star about every 90 seconds.
+
+Signal Agent reads every one.
+
+
+===== 16-unlock =====
+Holder access in three steps:
+
+1. Hold 0.1% of the supply
+2. Connect that wallet on signalaiagent.com
+3. Sign once. Free, and it sends nothing.
+
+Every tool opens. Signal Agent never asks for your keys.
+
+
+===== 17-agent =====
+An agent, not a feed.
+
+It reads the chain, weighs every launch, and tells you why. In plain words.
+
+
+===== 18-free =====
+Launch on Pons. Free, always.
+
+The Pons Launchpad on signalaiagent.com runs from your own wallet. No token needed, no fee from us.
+
+
+===== 19-never =====
+The map never sleeps.
+Every block. Every launch.
+
+
+===== 20-after (PNG setelah launch) =====
+We're live. The map is open.
+
+Buy on Pons, hold 0.1%, sign once on signalaiagent.com: every tool opens.
+
+CA: <tempel CA di sini>
+
+
+########## BATCH 3 ##########
+
+===== 21-scanner =====
+One CA. One reading.
+
+Paste any Pons token into Signal Agent: the dev, the bundles, the X account, the buyers, and a rug risk score from 0 to 100. In seconds.
+
+signalaiagent.com
+
+
+===== 22-sniper =====
+Let the agent buy the signal.
+
+Manual: paste a CA and buy in one click.
+Agent mode: it buys only what passes every check.
+Your wallet, your size, your limits.
+
+
+===== 23-fees =====
+Creator fees, from every wallet at once.
+
+One wallet in one click, or 200 accounts from one seed in one go. Every claim goes straight to your own wallet.
+
+
+===== 24-kit =====
+Your launch, written for you.
+
+Lore, tagline, bio, X thread and launch post. Tell Signal Agent the idea, get everything a Pons launch needs to say.
+
+
+===== 25-studio =====
+Give your token its own agent.
+
+Name it, give it a voice and a lore, and let it answer for your launch. Built on the same engine that reads every Pons launch.
+
+
+===== 26-noise =====
+Most launches are noise.
+
+Signal Agent reads every one, so you only look at the few that pass every check.
+
+
+===== 27-fallen (video) =====
+The dev sold. The star falls.
+
+When a dev sells the whole bag, Signal Agent marks the launch as fallen, with the reason, the block it happens.
+
+
+===== 28-hype =====
+Read the chain.
+Not the hype.
+
+
+===== 29-faq =====
+Do I need to hold to use Signal Agent?
+
+The Pons Launchpad is free for everyone.
+3 free reads a day, no wallet needed.
+Hold 0.1% and sign once: every tool opens.
+
+
+===== 30-safe =====
+Never your keys.
+
+Signal Agent never asks for your seed phrase or private key. Unlocking is one signature that sends nothing and costs nothing.
+
+
+########## LAUNCH ##########
+
+===== 31-launched (video, pin) =====
+$SIGNAL is live on Pons.
+
+Signal Agent charts every Pons launch on Robinhood Chain and names only the signal. Now the map has a token.
+
+CA: 0x6559520903b48582a48C52bB296A449e15Aca000
+
+Hold 0.1% and sign once on signalaiagent.com: every tool opens.
+
+
+########## BATCH 4 · GIMIK + PAYDEX ##########
+
+===== 32-dropca =====
+Drop your Pons CA below 👇
+
+We'll run it through Signal Agent and reply with the reading: dev, bundles, X, buyers.
+
+(Tip: balas tiap CA pakai Scanner di signalaiagent.com, screenshot hasilnya)
+
+
+===== 33-quiz =====
+Signal or dust? Reply A or B.
+
+Same age, very different stories. Answer tomorrow.
+
+(Jawaban besok: A = signal. Dev masih hold, buyer terus masuk, tanpa bundle, X asli. B = dust: dev 0%, bundle 22%, buyer berhenti, X baru dibuat.)
+
+
+===== 34-gm =====
+gm. The map didn't sleep. Did you?
+
+
+===== 35-timeline =====
+Your timeline vs. the map.
+
+One of them reads the chain.
+
+
+===== 36-lost =====
+Lost: 1,000 launches.
+Found: the few that matter.
+
+Signal Agent reads all of them, so you don't have to.
+
+
+===== 37-paydex =====
+Paydex: soon.
+
+Profile, banner and socials on the charts. The map gets its page.
+
+$SIGNAL
+
+
+===== 38-loading (video) =====
+$SIGNAL paydex loading…
+
+99%. Soon.
+
+
+########## BATCH 5 · GIMIK ##########
+
+===== 39-bingo =====
+Pons rug bingo. How many did you get this week? 🎯
+
+Quote with your score.
+
+(Signal Agent flags every one of these before you buy.)
+
+
+===== 40-devtext =====
+"ser are you selling?"
+"never 🫡"
+
+The chain, 60 seconds later: dev holds 0%.
+
+Read the chain, not the DMs.
+
+
+===== 41-receipt =====
+Your week on Pons, itemised 🧾
+
+Post yours. Next week, read the chain first.
+
+
+===== 42-whichstar =====
+Tag yourself. Dust, Fallen or Named?
+
+Quote with yours 👇
+
+
+===== 43-nobody =====
+nobody:
+literally nobody:
+Signal Agent at 4 am: reading launch #1,000.
+
+The map never sleeps.

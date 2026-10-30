@@ -102,7 +102,7 @@ document.addEventListener("click", (e) => { if (e.target.closest("[data-unlock]"
 async function unlockWith(body) {
   const r = await fetch("/api/auth", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }), j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(j.error || "Could not unlock.");
-  store.set("ocula.pass", j.pass); await refreshMe(); openModal();
+  store.set("signal.pass", j.pass); await refreshMe(); openModal();
 }
 el("mSign").addEventListener("click", async () => {
   el("mErr").textContent = "";
@@ -117,12 +117,17 @@ el("ownerForm").addEventListener("submit", async (e) => { e.preventDefault(); el
 refreshMe().then(() => { if (!me.holder && !TOOLS.includes(location.hash.slice(1))) document.querySelector('#tabs [data-t="launch"]')?.click(); });
 
 // buy buttons and the contract address once the token is set on the server
-fetch("/api/status").then((r) => r.json()).then((j) => {
+function buyButtons(tries = 0) { fetch("/api/status").then((r) => r.json()).then((j) => {
   if (!j.novaToken) return;
-  for (const id of ["buyNova", "buy2"]) { const b = el(id); b.textContent = "Buy token"; b.removeAttribute("aria-disabled"); b.href = "https://ponsfamily.com/launchpad/" + j.novaToken; b.target = "_blank"; b.rel = "noopener"; }
+  // the ticker comes from the chain; the server reads it in the background the first time
+  if (!j.tokenSymbol) { if (tries < 20) setTimeout(() => buyButtons(tries + 1), 2500); return; }
+  const sym = "$" + j.tokenSymbol;
+  if (el("tkSym")) el("tkSym").textContent = sym;
+  for (const id of ["buyNova", "buy2"]) { const b = el(id); b.textContent = "Buy " + sym; b.removeAttribute("aria-disabled"); b.href = "https://ponsfamily.com/launchpad/" + j.novaToken; b.target = "_blank"; b.rel = "noopener"; }
   const c = el("caCopy"); c.textContent = shortCa(j.novaToken); c.title = "Copy " + j.novaToken;
-  c.addEventListener("click", async () => { try { await navigator.clipboard.writeText(j.novaToken); c.textContent = "Copied"; setTimeout(() => (c.textContent = shortCa(j.novaToken)), 1400); } catch {} });
-}).catch(() => {});
+  if (!c.dataset.on) c.dataset.on = 1, c.addEventListener("click", async () => { try { await navigator.clipboard.writeText(j.novaToken); c.textContent = "Copied"; setTimeout(() => (c.textContent = shortCa(j.novaToken)), 1400); } catch {} });
+}).catch(() => {}); }
+buyButtons();
 
 // ---------- the live band: every launch as a line, signal bright, noise faint ----------
 function wave(r) {

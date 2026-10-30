@@ -3,8 +3,8 @@
   const f = window.fetch.bind(window);
   window.fetch = (input, init = {}) => {
     const url = typeof input === "string" ? input : input.url, same = url.startsWith("/") || url.startsWith(location.origin);
-    let pass = null; try { pass = localStorage.getItem("ocula.pass"); } catch {}
-    if (same && pass) { const h = new Headers(init.headers || (typeof input !== "string" ? input.headers : undefined)); h.set("x-ocula-pass", pass); init = { ...init, headers: h }; }
+    let pass = null; try { pass = localStorage.getItem("signal.pass"); } catch {}
+    if (same && pass) { const h = new Headers(init.headers || (typeof input !== "string" ? input.headers : undefined)); h.set("x-signal-pass", pass); init = { ...init, headers: h }; }
     return f(input, init);
   };
 })();
